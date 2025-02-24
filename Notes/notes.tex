@@ -1,0 +1,161 @@
+\documentclass{article}
+
+\usepackage{amsthm} 
+\usepackage{amsmath}    
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{graphicx}            
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{mathrsfs}
+\usepackage{fancyhdr}            
+\usepackage{enumerate}  
+\usepackage{dirtytalk}
+\usepackage{mdframed}
+\usepackage{graphicx}
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage[shortlabels]{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\title{\vspace{-3cm}Alice in Wonderland ML Notes}
+\author{}
+\date{}
+
+\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\tit}[1]{\textit{#1}}
+\newcommand{\mbf}[1]{\mathbf{#1}}
+
+\begin{document}
+\maketitle
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red}
+}
+
+\section{Mathemacial Preliminaries}
+
+\subsection{Linear Algebra}
+
+\begin{itemize}
+    \item A \tbf{tensor} $X$ is an n-dimensional array of elements of the same type. $X \sim (s_1,s_2,\cdot,s_n)$ denotes the shape of the tensor.
+\end{itemize}
+
+\subsubsection{Vector Operations}
+
+\begin{itemize}
+    \item A property of the dot product is that the maximum value of the dot product of two normalized vectors occurs when both vectors are the same. 
+    \begin{itemize}
+        \item When $\mbf{x}$, which represents the input, and $\mbf{w}$, which represents adaptable parameters, resonate, the dot product is maximized.
+        \item This is called template matching. 
+    \end{itemize} 
+\end{itemize}
+
+\subsubsection{Matrix Operations}
+
+\begin{itemize}
+     \item Given two matrices $\mbf{X}$ and $\mbf{Y}$, matrix multiplication is defined element wise as: $\mbf{Z}_{ij} = \mbf{X}_i \cdot \mbf{Y}_j$ 
+        i.e. the element $(i,j)$ of the product is the dot product of the $i$-th row of $\mbf{X}$ and the $j$-th column of $\mbf{Y}$.
+        \item The Hadamard method of multiplying matrices is element wise multiplication where each element of the resulting matrix $\mbf{Z}$ is given by $\mbf{Z}_{ij} = \mbf{X}_{ij} \cdot \mbf{Y}_{ij}$.
+        \item The Hadamard multiplication method is used primarily to mask matrices i.e. setting some elements to zero or scaling operations. 
+        \item The Hadamard multiplication method does not preserve linearity and cannot be used in operations where linearity is required. Additionally, it cannot be used in compositions of functions such as $f(g(x))$ because it operates element-wise rather than on the entire structure of the matrices.
+        \item There are many operations that can be done element wise or with whole matrices. PyTorch has built in modules for both types of operations. 
+\end{itemize}
+
+\subsubsection{Higher-order Tensor Operations}
+
+\begin{itemize}
+    \item When in higher dimensions, most of the operations we are interested in are either batched variants matrix operations, or specific combinations of matrix operations and reduction operations. 
+    \item Example: with two tensors $\mbf{X} \sim (n,a,b) \text{ and } \mbf{Y} \sim (n,b,c)$, the batched matrix multiplication is defined as $\mbf{Z} \sim (n,a,c)$ where $\mbf{Z}_{i} = \mbf{X}_i \cdot \mbf{Y}_i$.
+\end{itemize}
+
+\subsection{Gradients \& Jacobians}
+
+\begin{itemize}
+    \item Gradients play a pivotal role in optimization algorithms by providing semi-automatic mechanisms deriving from gradient descent. 
+\end{itemize}
+
+\subsubsection{Gradients and Directional Derivatives}
+
+\begin{itemize}
+    \item The gradient of a function is defined as:
+    \[
+    \nabla f(\mathbf{x}) = \partial f(\mathbf{x}) =
+    \begin{bmatrix}
+    \partial_{x_1} f(\mathbf{x}) \\
+    \vdots \\
+    \partial_{x_d} f(\mathbf{x})
+    \end{bmatrix}
+    \]
+    \item The directional derivative is the dot product of the gradient and the direction vector:
+    \[\nabla f(x) \cdot \mbf{v}\]
+\end{itemize}
+
+\subsubsection{Jacobians}
+
+\begin{itemize}
+    \item Let there be a function $f(x)$ that maps a vector input $\mbf{x} \sim (d)$ to a vector output $\mbf{y} \sim (c)$. To calculate the gradient for each output, we must create the \textbf{Jacobian} of $f$.
+        
+        \[\partial f(\mathbf{x}) = 
+        \begin{bmatrix}
+        \frac{\partial y_1}{\partial x_1} & \frac{\partial y_1}{\partial x_2} & \cdots & \frac{\partial y_1}{\partial x_d} \\
+        \frac{\partial y_2}{\partial x_1} & \frac{\partial y_2}{\partial x_2} & \cdots & \frac{\partial y_2}{\partial x_d} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial y_c}{\partial x_1} & \frac{\partial y_c}{\partial x_2} & \cdots & \frac{\partial y_c}{\partial x_d}
+        \end{bmatrix}
+        \]
+    \item Each column of the Jacobian corresponds to the gradient of $f(x)$ that maximizes a specific value within the output vector $\mbf{y}$.
+    \item Each row of the Jacobian describes how the rate of change for the outputs changes with respect to a specific input.
+    \item When $c$ is equal to 1, i.e. when there is only a single output parameter, the matrix simplifies to a single row vector which is the gradient of the function $f(x)$.
+    \item When $c = 1 = d$, the Jacobian becomes the standard derivative of the function. 
+    \item Jacobians inherit the properties of derivatives, including the fact that the Jacobian of a compositions of functions is now the matrix multiplication of the individual Jacobians. 
+    \item For a point $x_0$, the best linear approximation to $f(x)$ is $f(\mbf{x}_0) + \partial f(\mbf{x}_0) \cdot (\mbf{x} - \mbf{x}_0)$. This is called Taylor's theorem.
+    \item A code example:
+\begin{lstlisting}
+$ Generic mathematical function
+f = lambda x: x**2 - 1.5*x
+
+# Derivative 
+df = lambda x: 2*x - 1.5
+
+x = 0.5
+f_linearized = lambda h: f(x) + df(x)*(h-x)
+
+#Comparing approximation to actual function
+print(f(x + 0.01)) # [Out] = -0.5049
+print(f_linearized(x + 0.01)) # [Out] = -0.5050
+\end{lstlisting}
+\end{itemize}
+
+\subsubsection{Numerical Optimization and Gradient Descent}
+\begin{itemize}
+    \item Consider the problem of trying to find the minimum of a function $f(x)$. Assuming the function has a single output \tbf{single-objective optimization}, we try to find a global minimum within an uncontrained domaine.
+    \item It it possible to express the solution in closed-form (where there is a function to find the optimal $\mbf{x})$, but in general we must resort to iterative procedures. 
+    \item Let's start with a random guess $\mbf{x_0}$ and for every iteration, we decompose the new position as the sum of the old position  + the magnitude of the step times the direction of the step:
+    \[\mbf{x}_t = \mbf{x}_{t-1} + \eta_t \cdot \mbf{p}_t\]
+    where $\eta_t$ is the length of the step and $\mbf{p}_t$ is the normalized direction vector.
+    \item We call $\eta_t$ the \tbf{learning rate} and a direction $\mbf{p}_t$ such that $f(\mbf{x}_t) \leq f(\mbf{x}_{t-1})$ the \tbf{descent direction}.
+    \item Selecting a descent direction for every iteration and being careful with choice of step size will allow us to converge to a local minimum.
+    \item Given that $\mbf{p}_t$ is the descent direction, it is known that $D_{\mbf{p_t}} f(\mbf{x_{t-1}}) \leq 0$.
+    \item Given that the directional derivative is the dot product of the gradient and the direction vector, we can conclude:
+    \[D_{\mbf{p_t}} f(\mbf{x_{t-1}}) = \nabla f(x_{t-1}) \cdot \mbf{p}_t = ||\nabla f(x_{t-1})|| \cdot ||\mbf{p}_t|| \cdot \cos \alpha \]
+    where $\alpha$ is the angle between the gradient and the descent direction. 
+    \item The first term is a constant with respect to $\mbf{p_t}$, and $||\mbf{p_t}||$ can be assumed to be equal to 1 as it's a normalized direction vector. With this information, we can simplify the previous formula:
+    \[D_{\mbf{p_t}} f(\mbf{x_{t-1}}) = ||\nabla f(x_{t-1})||  \cdot \cos \alpha \]
+    \item The properties of consine result in it being negative when  $\frac{\pi}{2} < \alpha < \frac{3 \pi}{2}$, therefore any $\mbf{p_t}$ that forms an angle $a$ satisfying the previous inequality will be a descent direction.
+    \item The \tbf{steepest descent direction} is the direction where $\mbf{p_t}$ forms an angle of $\pi$ with $\nabla f(\mbf{x_{t-1}})$ which is synonymous with $\mbf{p_t} = -\nabla f(\mbf{x_{t-1}})$.
+    \item On an intutive level, this makes sense as the gradient points in the direction of greatest increase, so the negative of the gradient would point in the direction of greatest descrease. 
+    \item The previous formula can be rewritten as:
+    \[\mbf{x}_t = \mbf{x}_{t-1} - \eta _t \nabla f(\mbf{x}_{t-1})\]
+    \item The step size doesn't matter all that much as long as the size is small enough for $f$ to reduce with each iteration. 
+    
+    
+
+    
+\end{itemize}
+\end{document}
+
