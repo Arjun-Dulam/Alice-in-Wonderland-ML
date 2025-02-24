@@ -153,6 +153,20 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \[\mbf{x}_t = \mbf{x}_{t-1} - \eta _t \nabla f(\mbf{x}_{t-1})\]
     \item The step size doesn't matter all that much as long as the size is small enough for $f$ to reduce with each iteration. 
     
+    \subsubsection{Convergence of Gradient Descent}
+
+    \begin{itemize}
+        \item The formal definition for a local minimum of $f(x)$ is a point $\mbf{x}^+$ such that the following is true for some $\epsilon > 0$:
+        \[f(\mbf{x}^+) \leq f(\mbf{x}) \hspace{.1cm} \forall \mbf{x} : ||\mbf{x} - \mbf{x}^+|| < \epsilon\]
+        \item In other words, the function $f(\mbf{x})$ exists at a local minimum at a point $\mbf{x}^+$ if for some positive value $\epsilon$, 
+        $f(\mbf{x}^+)$ is less than every point $\epsilon$ distance away from $\mbf{x}^+$. 
+        \item By the definition of the local minimum, a function at some local minimum will only ever increase if it enters the neighborhood around the local minimum. Thus the 
+        gradient at a local minimum is zero and the gradient around the local minimum is pointing upwards. 
+        \item A \tbf{stationary point} of $f(\mbf{x})$ is a point $\mbf{x}^+$ such that $\nabla f(\mbf{x}^+) = 0$.
+        \item Stationary points exist at all minima, maxima, and saddle points i.e. where $\nabla f(\mbf{x}) = 0$.
+        \item Due to this, we can only guarantee that gradient descent will converge to a stationary point, not necessarily a local minimum. 
+        \item Ideally, we would want to attain the \tbf{global minimum} of a function, the one (or possibly one of many) point(s) in the domain where $f(\mbf{x})$ attains its lowest possible value.  .
+    \end{itemize}
     
 
     
