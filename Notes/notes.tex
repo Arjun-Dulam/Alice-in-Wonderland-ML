@@ -131,7 +131,7 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
 \end{lstlisting}
 \end{itemize}
 
-\subsubsection{Numerical Optimization and Gradient Descent}
+\subsection{Numerical Optimization and Gradient Descent}
 \begin{itemize}
     \item Consider the problem of trying to find the minimum of a function $f(x)$. Assuming the function has a single output \tbf{single-objective optimization}, we try to find a global minimum within an uncontrained domaine.
     \item It it possible to express the solution in closed-form (where there is a function to find the optimal $\mbf{x})$, but in general we must resort to iterative procedures. 
@@ -153,6 +153,7 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \[\mbf{x}_t = \mbf{x}_{t-1} - \eta _t \nabla f(\mbf{x}_{t-1})\]
     \item The step size doesn't matter all that much as long as the size is small enough for $f$ to reduce with each iteration. 
     
+    \end{itemize}
     \subsubsection{Convergence of Gradient Descent}
 
     \begin{itemize}
@@ -165,11 +166,41 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
         \item A \tbf{stationary point} of $f(\mbf{x})$ is a point $\mbf{x}^+$ such that $\nabla f(\mbf{x}^+) = 0$.
         \item Stationary points exist at all minima, maxima, and saddle points i.e. where $\nabla f(\mbf{x}) = 0$.
         \item Due to this, we can only guarantee that gradient descent will converge to a stationary point, not necessarily a local minimum. 
-        \item Ideally, we would want to attain the \tbf{global minimum} of a function, the one (or possibly one of many) point(s) in the domain where $f(\mbf{x})$ attains its lowest possible value.  .
-    \end{itemize}
-    
+        \item Ideally, we would want to attain the \tbf{global minimum} of a function, the one (or possibly one of many) point(s) in the domain where $f(\mbf{x})$ attains its lowest possible value.
+        \item For the sake of visualization, assume  $f(\mbf{x}) \in \mathbb{R}^3$. If the function assumes a parabolic shape, then every point in the domain will have a gradient pointing toward the global minimum.
+        \item With the previous example, the topic of \tbf{convexity} comes up. A function $f(\mbf{x})$ is convex if for any two points $\mbf{x}_1$ and $\mbf{x}_2$, and $\alpha \in [0,1]$, we have:
+        \[f(\underbrace{\alpha \mbf{x}_1 + (1-\alpha)\mbf{x}_2}_{\text{Interval from $\mbf{x}_1$ to $\mbf{x}_2$}}) \leq \underbrace{\alpha f(\mbf{x}_1) + (1 - \alpha) f(\mbf{x}_2)}_{\text{Line segment from $f(\mbf{x_1})$ to $f(\mbf{x}_2)$}}\]
+        \item In words, a function is convex if the line segment connecting two points $f(\mbf{x}_1)$ and $f(\mbf{x}_2)$ is always greater than or equal to every single value on the function between $\mbf{x}_1$ and $\mbf{x}_2$. 
+        \item A convex function simplified our task greatly for the following reasons:
+        \begin{itemize}
+            \item For a generic non-convex function, gradient descent will always converge onto a stationary point, not necessarily a local minimum.
+            \item For a convex function, the stationary point is the global minimum.
+            \item if the inequality earlier is satisfied in a strict way (\tbf{strict convexity}), then the global minimizer is guaranteed to be unique. 
+        \end{itemize}
+        \item Trying to find the global minimum is a non-convex problem with gradient descent is impossible because you must run the algorithm for an infinite amount of time to check the infinite amount of points from an infinite amount of initializations in the unconstrained domain. 
+        \end{itemize}
+        
+        \subsubsection{Accelerating Gradient Descent}
 
-    
-\end{itemize}
+        \begin{itemize}
+            \item A problem with the gradient approach is that it only points to the greatest descent direction in an extemely small neighborhood around the current point. 
+            This can lead to very noisy updates and slow convergence.
+            \item To smooth out the erratic changes in descent direction, we can make the direction of the current step to affect the direction of the next step. Such a method is called \tbf{momentum}:
+            \begin{align*}
+                \mbf{g}_t &= - \underbrace{\eta_t \nabla f(\mbf{x}_{t-1})}_{\text{gradient descent}} + \underbrace{\lambda \mbf{g}_{t-1}}_{\text{momentum}} \\
+                \mbf{x}_t &= \mbf{x}_{t-1} + \mbf{g}_t
+            \end{align*}
+            where we initialize $\mbf{g}_0 = 0$ and $\lambda$ is a parameter that determines how much the previous term is dampened.
+            \item Expanding two terms:
+            \begin{align*}
+                \mbf{g}_t &= - \eta \nabla f(\mbf{x}_{t-1}) + \lambda (-\eta_t \nabla f(\mbf{x}_{t-2})+\lambda \mbf{g}_{t-2}) \\
+                &= -\eta_t \nabla f(\mbf{x}_{t-1}) - \lambda \eta_t \nabla f(\mbf{x}_{t-2}) + \lambda^2 \mbf{g}_{t-2}
+            \end{align*}
+            \item The momentum method has been shown to accelerate training by smoothing the optimization path. Also, modifying the step size depending on the gradient is another method. 
+            Usually, the step size and the gradient are inversely proportional.
+        \end{itemize}
+        
+
+
 \end{document}
 
