@@ -1,6 +1,6 @@
 # Alice in Wonderland ML
 
-The notes I took reading _Alice's Adventures in a Differentiable Wonderland: A Primer on Designing Neural Networks_ by Simone Scardapane.
+A collection of my notes and code associated with _Alice's Adventures in a Differentiable Wonderland: A Primer on Designing Neural Networks_ by Simone Scardapane.
 
 The author's website can be found [here](https://www.sscardapane.it/).
 

@@ -27,8 +27,10 @@ def gradient(x1, x2):
     return np.array([x1_prime_col, x2_prime_col])  # Ensure shape (2,)
 
 # Gradient Descent function
-def gradient_descent(threshold=1e-6, max_iters=1000):
+def gradient_descent(threshold=1e-10, max_iters=100_000):
     curr_point = np.random.rand(2)  # Start from a random point
+    # curr_point = curr_point * 1000
+    start_point = curr_point
     iteration = 0
     point_list = []
     while np.linalg.norm(gradient(curr_point[0], curr_point[1])) > threshold and iteration < max_iters:
@@ -38,7 +40,7 @@ def gradient_descent(threshold=1e-6, max_iters=1000):
         curr_point = curr_point - stepSize * grad  # Ensure proper shape
         iteration += 1
     point_list.append(curr_point)
-    return iteration, curr_point, f(curr_point[0], curr_point[1]), point_list
+    return start_point, iteration, curr_point, f(curr_point[0], curr_point[1]), point_list
 
 # Visualizing norm of gradients.
 def viz_gradient(gradient_list):
@@ -64,16 +66,17 @@ def plot_gradient_descent(points, levels):
 
 # Run Gradient Descent
 gradient_list = []
-iterations, opt_point, opt_value, point_list = gradient_descent()
+start_point, iterations, opt_point, opt_value, point_list = gradient_descent()
 x = np.linspace(0, 1, 100)
 y = np.linspace(0, 1, 100)
 X, Y = np.meshgrid(x, y)
 Z = f(X, Y)
 levels = np.linspace(Z.min(), Z.max(), 30)
+np.set_printoptions(precision=4)
 
-print(f"Optimal point: {opt_point}, Function value: {opt_value}")
+print(f"Starting point: {start_point}, Optimal point: {opt_point}, Function value: {opt_value:.4f}. Attained with {iterations} iterations.")
 
 plot_gradient_descent(point_list, levels)
 viz_gradient(gradient_list)  # Add this line to visualize the gradient norms
 
-plt.show()
+# plt.show()
