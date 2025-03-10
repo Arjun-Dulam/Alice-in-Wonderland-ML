@@ -36,7 +36,7 @@
     commentstyle=\color{gray},
     stringstyle=\color{red}
 }
-
+\setcounter{section}{1}
 \section{Mathemacial Preliminaries}
 
 \subsection{Linear Algebra}
@@ -199,5 +199,138 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
             \item The momentum method has been shown to accelerate training by smoothing the optimization path. Also, modifying the step size depending on the gradient is another method. 
             Usually, the step size and the gradient are inversely proportional.
         \end{itemize}
+
+
+\section{Datasets and Losses}
+
+\subsection{What is a Dataset?}
+
+\begin{itemize}
+    \item A supervised dataset $S_n$ of size $n$ is a set of $n$ pairs
+    \[ S_n = \{(x_i, y_i)\}_{i=1}^n \]
+    where each $(x_i, y_i)$ is an example of an input-output relationship we want to model. We further assume that each example is an identically and independently distributed
+    draw from some unknown (and unknowable) probability distribution $p(x, y)$.
+    \item A sample being \tbf{identicially distributed} means that we are trying to track something that is sufficiently stable in terms of change over time. 
+    Take the task of identifying car models from photos.
+    Since car models change over time, we will not be able to to have an identical distribution of car models in a dataset with large discrepancies on the time when the data was collected
+    \item A sample being \tbf{independently distributed} means that there is no inherent bias in our training data. 
+    This condition would not be satisfied if we exclusively collected data from outside a Tesla dealership. 
+\end{itemize}
+
+\subsubsection{Variants of Supervised Learning}
+
+\begin{itemize}
+    \item In datasets with not enough targets $y_i$, we can use \tbf{unsupervised learning}. Typical applications of unsupervised learning are \tbf{clustering algorithms}, 
+    where points between clusters are similar and points within clusters are dissimilar. An example of this would be grouping together simlar news articles in terms of topics. 
+    Another example is a \tbf{retrieval} system, where we retrieve the most similar elements to the user's query.
+    \item Unsupervised learning in itself is not ideal for image classification, because the slightest modifiction to an image can lead to millions of pixels being changed. 
+    A model that's already optimized for image classification, a \tbf{pre-trained} model, can be used to extract features from the images.
+    \item The states of this model can be interpreted as vectors in a higher-dimensional space. These vectors can be mapped and used to train a classifier.
+    
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=4in]{../miscImages/preTrain.png} 
+        \caption{High level overview of using pre-trained model}
+        \label{fig:example}
+    \end{figure}
+
+    \item \tbf{Self-supervised learning} is a variant of un-supervised learning where the model is trained to find some supervised objective from a unsupervised dataset. 
+    An example of would be this: A model is given a large piece of text. The model removes a specific part from each sentece in the text and tries to guess the removed part. 
+    Comparing its guess to the actual removed part is the supervised objective, the model continously learns from comparing its guess to the removed part.
+
+    \item There are three ways of using trained models:
+    
+    \begin{itemize}
+        \item \tbf{Zero-Shot Learning}: An trained model is given a task it has not training on. It is given no extra data on the task, and must rely on its previous training. 
+        \item \tbf{Few-Shot Prompting}: A trained model is given a task it has not training on. It is given a few examples of the task and uses its existing knowledge to make a new inference.
+        \item \tbf{Fine-Tuning}: A trained model is furthet trained on a specific task. This allows it to adapt to the specific needs of the task while using its prior existing knowledge.
+    \end{itemize}
+
+    \item When fine tuning, the model can have all of its parameters changes, or change/add a few parametets. The latter is called \tbf{parameter efficient fine-tuning}.   
+    \item \tbf{Semi-supervised learning} is a variant of supervised learning where the model is trained on a dataset with a small number of labeled examples and a large number of unlabeled examples.
+    \item 
+
+\end{itemize}
+
+\subsection{Loss Functions}
+
+\begin{itemize}
+    \item Given a desried targey $y$ and the predicted value $\hat{y} = f(x)$ from a model $f$, 
+    a \tbf{loss function} $l(y, \hat{y}) \in \mathbb{R}$ is a scalar, differentiable function whose value correlates with the performance of the model.
+    The performance of the model is measured by the minimization of the loss function i.e. $l(y, \hat{y}_1) < l(y, \hat{y}_2)$ implies that $\hat{y}_1$ is a better prediction than $\hat{y}_2$
+    wrt the target $y$.
+    \item The loss function's scalar and differentiable properties allow it to be minimized with a gradient descent algorithm. 
+    \item Given a dataset $S_n = \{(x_i, y_i)\}$, and a loss function $l(.,.)$, the optimization task at hand is to minimum average loss on the dataset by any possible differentiable model $f$:
+    \[f^* = \arg _f\min \underbrace{\frac{1}{n}\sum_{i=1}^{n}}_{\text{average}}\underbrace{l(y_i, f(x_i))}_{\text{loss value}}\]
+    \item Essentially, we're trying to find the best model that minimizes the loss function. 
+    We do this by getting the average of the losses for every single prediction a model makes on a certain dataset.
+    We compare this loss with the average loss of other models on the same dataset, the model with the lowest average loss is best at making predictions for inputs in the dataset. 
+    \item This is called \tbf{empirircal risk minimization} (risk is generic synonym for loss).
+    \item Models can be parameterized by a set of tensors $w$ (called parameters of the model), 
+    and minimization is done by searching for the optimal value of these parameters via numerical optimization, denoted by $f(x,w)$.
+    \item $f(x,w)$ represents the prediction when giving an input $x$ into a model with parameters $w$.
+    \item Hence, the optimization task can be rewritten as:
+    \[w^* = \arg _w \min \frac{1}{n} \sum^n_{i=1}l(y_1, f(x_1,w))\]
+    \item In this context, we determine the optimal parameters for a specific model that minimizes the average loss on the dataset. 
+\end{itemize}
+\paragraph{On the differentiability of the loss function}
+\begin{itemize}
+    \item Consider a model $f$ that outputs a $y \in \{-1,+1\}$ where the true target can only take on two values : -1 and +1.
+    \item We can equate the two possible correct outputs with the sign of $f$, denoted $\operatorname{sign(f(x))}$.
+    \item One possible loss function is the \tbf{0/1 loss}:
+    \[
+    l(y, \hat{y}) = 
+    \begin{cases}
+        0 \text{ if } \operatorname{sign}(\hat{y}) = y \\
+        1 \text{ otherwise }
+    \end{cases}
+    \]
+    \text{This is not differentiable, so the gradient descent algorithm would not work to minimize it.}
+    \item Another one is \tbf{margin} $y \hat{y}$, which will be positive if the prediction is correct and negative otherwise. 
+    This is preferable as is is continuously differentiable. 
+    \item The \tbf{hinge loss} function $l(x,y) = max(0,1-y\hat{y})$ is a continuous and differentiable loss function used to train support-vector models.
+\end{itemize}
+
+\subsection{Expected Risk and Overfitting}
+
+\begin{itemize}
+    \item The loss function can be completely minimized if we only respond to inputs already within a dataset, 
+    however the objective is to minimize the loss function for all possible inputs.
+    \item The \tbf{expected risk} given a probability distribution $p(x,y)$ and a loss function $l$ is defined as:
+    \[\text{ER}[f] = \mathbb{E}_{p(x,y)}[l(y,f(x))]\]
+    \item This expression shows the expected risk of a model $f$, denoted ER$[f]$, for all possible input-output pairs $(x,y)$ on a probability distribution. 
+    \item The equation in unfeasiable to calculate, so the \tbf{empirical} risk is an estimate of the expected risk with a given dataset.
+    \item The difference in loss between the expected and empirircal risk is called \tbf{generalization gap}. 
+    \item A overly specific model based on memorization will have a large generalization gap, as it will overfit to the training data, 
+    but does not respond well to new data.
+    \item Generalization can be tested by using a separate \tbf{test dataset} that the model has not seen before.
+\end{itemize}
+
+\subsection{Selecting Valid Loss Functions}
+
+\begin{itemize}
+    \item Assuming our examples come from a distribution $p(x,y)$, we can decompose it as $p(x,y) = p(x) \cdot p(y | x)$.
+    \item The function $f(x)$ is used to predict $p(y|x)$ i.e. the chance of the model giving the correct output $y$ given the input $x$.
+    \item Approximating $p(y|x)$ with a function $f(x)$ is viable if we assume that the probability mass is mostly centered
+    around a single point $y$ i.e. there are not multiple points $y_1, y_2, \cdots y_n$ that are likely to be be the output.
+    \item However, if we move away from the previous definition of $f(x)$ and instead think of $f(x)$ as
+    a parameterization of the chances of the different outputs $y_1, y_2, \cdots, y_n$ given $x$, we can represent $f(x)$ as:
+    \[f(x) = [p(y_1 | x) , p(y_2 | x), p(y_3 | x)]\]
+    \item Similarly, we also define $\mbf{y} \sim \operatorname{Binary}(n)$ where $\mbf{y}$ is a one-hot encoded vector that contains a 1 at the correct output's place.
+    \item Thus, we can write: 
+    \[p(\mbf{y} | f(x) = \prod^3_{i = 1}f_i(x)^{y_1}\]
+    \item This chain of logic can be shown via an example:
+    Assume there is a model, given an input $x$, outputs a $y \in \{1,2,3\}$. The model's chances of giving these outputs are respectively $f(x) = [0.2, 0.5, 0.3]$.
+    Assume that the correct output is $y = 2$. Thus, the correct representation of $\mbf{y} \sim 3$ is $[0,1,0]$.
+    Following the expression above, $p(\mbf{y} | f(x))$ can be calculated as:
+    \begin{align*}
+        p(\mbf{y} | f(x)) &= f_1(x)^{y_1} \cdot f_2(x)^{y_2} \cdot f_3(x)^{y_3} \\
+        &= 0.2^0 \cdot 0.5^1 \cdot 0.3^0 \\
+        &= 0.5 
+    \end{align*}
+    Thus, the probability of the model giving the correct output is 0.5.
+
+\end{itemize}
+
 \end{document}
 
