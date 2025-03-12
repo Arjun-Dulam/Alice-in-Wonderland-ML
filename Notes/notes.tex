@@ -235,8 +235,8 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \end{figure}
 
     \item \tbf{Self-supervised learning} is a variant of un-supervised learning where the model is trained to find some supervised objective from a unsupervised dataset. 
-    An example of would be this: A model is given a large piece of text. The model removes a specific part from each sentece in the text and tries to guess the removed part. 
-    Comparing its guess to the actual removed part is the supervised objective, the model continously learns from comparing its guess to the removed part.
+    An example of would be this: A model is given a large piece of text. The model removes a specific part from each sentence in the text and tries to guess the removed part. 
+    Comparing its guess to the actual removed part is the supervised objective, the model continuously learns from comparing its guess to the removed part.
 
     \item There are three ways of using trained models:
     
@@ -248,7 +248,6 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
 
     \item When fine tuning, the model can have all of its parameters changes, or change/add a few parametets. The latter is called \tbf{parameter efficient fine-tuning}.   
     \item \tbf{Semi-supervised learning} is a variant of supervised learning where the model is trained on a dataset with a small number of labeled examples and a large number of unlabeled examples.
-    \item 
 
 \end{itemize}
 
@@ -291,7 +290,7 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \item The \tbf{hinge loss} function $l(x,y) = max(0,1-y\hat{y})$ is a continuous and differentiable loss function used to train support-vector models.
 \end{itemize}
 
-\subsection{Expected Risk and Overfitting}
+\subsubsection{Expected Risk and Overfitting}
 
 \begin{itemize}
     \item The loss function can be completely minimized if we only respond to inputs already within a dataset, 
@@ -306,11 +305,11 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \item Generalization can be tested by using a separate \tbf{test dataset} that the model has not seen before.
 \end{itemize}
 
-\subsection{Selecting Valid Loss Functions}
+\subsubsection{Selecting Valid Loss Functions}
 
 \begin{itemize}
     \item Assuming our examples come from a distribution $p(x,y)$, we can decompose it as $p(x,y) = p(x) \cdot p(y | x)$.
-    \item The function $f(x)$ is used to predict $p(y|x)$ i.e. the chance of the model giving the correct output $y$ given the input $x$.
+    \item The function $f(x)$ is used to predict $p(y|x)$, that is, the chance that the model will give the correct output $y$ given the input $x$.
     \item Approximating $p(y|x)$ with a function $f(x)$ is viable if we assume that the probability mass is mostly centered
     around a single point $y$ i.e. there are not multiple points $y_1, y_2, \cdots y_n$ that are likely to be be the output.
     \item However, if we move away from the previous definition of $f(x)$ and instead think of $f(x)$ as
@@ -320,7 +319,7 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \item Thus, we can write: 
     \[p(\mbf{y} | f(x) = \prod^3_{i = 1}f_i(x)^{y_1}\]
     \item This chain of logic can be shown via an example:
-    Assume there is a model, given an input $x$, outputs a $y \in \{1,2,3\}$. The model's chances of giving these outputs are respectively $f(x) = [0.2, 0.5, 0.3]$.
+    Assume there is a model, given an input $x$, outputs a $y \in \{1,2,3\}$. The model's chances of giving these outputs are, respectively, $f(x) = [0.2, 0.5, 0.3]$.
     Assume that the correct output is $y = 2$. Thus, the correct representation of $\mbf{y} \sim 3$ is $[0,1,0]$.
     Following the expression above, $p(\mbf{y} | f(x))$ can be calculated as:
     \begin{align*}
@@ -330,7 +329,80 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
     \end{align*}
     Thus, the probability of the model giving the correct output is 0.5.
 
+    \item Our formula does not directly give the probability for the output, but instead gives a probability distribution over the possible outputs, with the correct one being one of them.
 \end{itemize}
 
-\end{document}
+\subsubsection{Maximum Likelihood}
 
+\begin{itemize}
+    \item Assume that the samples are independent and identically distributed (i.i.d) from a probability distribution $p(x,y)$. Recall that the probability distribution $p(x,y)$ describes the probability of observing the input $x$ and $y$ together. Hence, the probability assigned to the dataset itself by a specific choice $f$ of function is given by the product of each sample in the dataset:
+    \[p(\mathcal{S}_n|f) = \prod^{\pi}_{i=1}p(y_i|f(x_i))\]
+    \item This formula defines the probability that a given model $f$ will provide outputs $y_1, y_2, \cdots, y_n$ that are the same as the outputs in the dataset $\mathcal{S}_n$ given the inputs $x_1, x_2, \cdots, x_n$.
+    \item The quantity $p(\mathcal{S}_n | f)$ is called the \tbf{likelihood} of the set. This quantity is to be maximized up to a certain extent, where the model's outputs do not deviate greatly from the dataset's outputs but also where the model is also not overfitted with the dataset (and thus struggling with inputs outside of the dataset).
+    \item Given a dataset $\mathcal{S}_n=\{\{x_i, y_i\}\}$ and a family of probability distributions $p(y|f(x)$ parameterized by $f(x)$, the maximum likelihood solution is given by:
+    \[f^* = \arg _f \max \prod ^\pi _{i=1} p(y_i|f(x_i))\]
+    Essentially, this formula provides the maximum likelihood across all models by providing the likelihood of the best function $f^*$.
+    \item Switching to a minimization problem, we get:
+    \[
+    \arg _f \max \left\{ \log \prod ^n _{i=1} p(y_i|f(x_i))\right\} = \arg _f \min \left\{\sum^n_{i=1} -\log(p(y_i|f(x_i))\right\}
+    \]
+    A few notes on this equation:
+    \begin{itemize}
+        \item We use the log function because multiplying probabilities $<1$ can result in a very small product, leading to underflow when storing into memory. Using log helps alleviate this issue.
+        \item Reminder: the log of a product is equivalent to the sum of the logs of items being multiplied:
+        \[\log (ab)= \log(a) + \log(b)\]
+        Converting this to an addition problem results in reduced computing demand.
+        \item Adding the negative sign on the right-hand side of the equations turns this into a minimization problem which has been covered earlier.
+    \end{itemize}
+    \end{itemize}
+    \subsection{Bayesian Learning}
+    \begin{itemize}
+        \item When designing a probability function $p(y|f(X))$ instead of $f(x)$, we can handle situations where the model might give different possible outputs. 
+        \item This procedure however only looks an one singular function with a specific parameterization. What if we had multiple functions with different parameterization that all provide good outputs? It would be wasteful to rely on one singular function instead of relying on multiple and choosing the best model for an input based on its output.
+        \item We can achieve this by defining a \tbf{prior probability distribution} $p(f)$ over all possible functions. Recall that $f$ is a model with a certain set of parameters.
+        \begin{itemize}
+            \item Recall that a \tbf{Bayesian prior} is a initial belief on what a parameter might be.
+        \end{itemize}
+        \item Functions with smaller norms are preferred so setting up an inverse relationship with the parameters' norm would be useful in creating our priors:
+        \[p(f) \propto \frac{1}{||f||}\]
+        \item Once a dataset is observed, the probability over $f$ shifts depending on the prior and the likelihood, and the update is given by \tbf{Bayes' theorem}.
+        \[\underbrace{p(f|\mathcal{S}_n)}_{posterior}=\frac{p(\mathcal{S}_n|f))\cdot \overbrace{p(f)}^{prior}}{p(\mathcal{S}_n)}\]
+
+        The term $p(f|\mathcal{S})$ is called the \tbf{posterior distribution function}, while the term $p(\mathcal{S}_n)$ is called the \tbf{evidence} and normalizes the right-hand side of the equation.
+
+        \item Given an input $x$, we can make a prediction by averaging all possible models based on their posterior's weight:
+        \[p(y|x) = \int _f p(y|f(x)) \cdot p(f|\mathcal{S}_n) \approx \frac{1}{k} \sum ^k _{i=1} p(y|f_i(x)) \cdot p(f_i|\mathcal{S}_n)\]
+        Here, we take the average of all models when we take the summation and divide by the amount of models on the right hand side.
+        \item If we are solely interested in maximizing the posterior term, we can discard the evidence term as that remains relatively constant. As a result, we can choose only to focus on the terms in the numerator:
+        
+        \[f^* = \arg \max p(\mathcal{S}_n | f)p(f) = \arg _f \max \left\{\underbrace{\log p(\mathcal{S}_n|f)}_{likelihood} + \underbrace{\log p(f)}_{regularization} \right\} \]
+        This is the \tbf{maximum a posteriori} (MAP) solution. 
+        \item If all functions have the same weight a priori, then the proble is reduced down to a maximum likelihood solution. The regularizer term pushes the solution toward the basin of attraction defined by the prior distribution.
+    \end{itemize}
+
+    \section{Linear Models}
+
+    \subsection{Least-Squares Regression}
+
+    \subsubsection{Problem setup}
+        
+    Recall that a supervised learning problem can be defined by choosing the input type $x$, the output type $y$, the model $f$, and the loss function $l$.
+    
+    \begin{itemize}
+        \item The input is a vector $\mbf{x} \sim (c)$, corresponding to $c$ number of features in the input.
+        \item The output is a single real value $\in \mathbb{R}$. 
+        \begin{itemize}
+            \item If $y$ can take any real value, this is a \tbf{regression} task/
+            \item If $y$ can only take one out of $m$ possible values, this is a \tbf{classification} task.
+            \item If $y$ can only take one of two possible values, this is a \tbf{binary classification} task.
+        \end{itemize}
+        \item We assume $f$ is a linear model.
+        \item We assume that:
+        \begin{itemize}
+            \item $n \rightarrow$ size of the database
+            \item $c \rightarrow$ features of input
+            \item $m \rightarrow$ classes of outputs
+        \end{itemize}
+    \end{itemize}
+    \subsubsection{Regression Losses: The Square Loss and Variants}
+\end{document}
