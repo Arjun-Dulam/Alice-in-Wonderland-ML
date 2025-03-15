@@ -116,7 +116,7 @@
     \item For a point $x_0$, the best linear approximation to $f(x)$ is $f(\mbf{x}_0) + \partial f(\mbf{x}_0) \cdot (\mbf{x} - \mbf{x}_0)$. This is called Taylor's theorem.
     \item A code example:
 \begin{lstlisting}
-$ Generic mathematical function
+# Generic mathematical function
 f = lambda x: x**2 - 1.5*x
 
 # Derivative 
@@ -404,5 +404,88 @@ print(f_linearized(x + 0.01)) # [Out] = -0.5050
             \item $m \rightarrow$ classes of outputs
         \end{itemize}
     \end{itemize}
-    \subsubsection{Regression Losses: The Square Loss and Variants}
+    \subsubsection{Regression Losses: The Squared Loss and Variants}
+    \begin{itemize}
+        \item Finding the loss for regression is very simple since the prediction error $e = \{\hat{y} - y\}$. However, since we do not concern ourselves 
+        with the sign of the loss, rather its absolute value, we can change the loss function to be:
+        \[l(\hat{y},y) = (\hat{y}-y)^2\]
+        \item The squared loss function provides many benefits, one of which is that it's rather easy to find the gradient of such a linear function of the model's input.
+        \item Recalling the maximum likelihood principle, the squared loss can be obtained by assuming the outputs of the model follow a Gaussian distribution
+        centered in $f(x)$ with a constance variance of $\sigma^2$.
+        \[p(y|f(\mbf{x}) = \mathcal{N}(y|f(\mbf{x})), \sigma^2)\]
+        Using properties of logs, we can rewrite the log-likelihood as:
+        \[\log(p(y|f(\mbf{x}, \sigma^2)) = -\log(\sigma)-\frac{1}{2}\log(2 \pi) - \frac{1}{2\sigma^2}(y-f(\mbf{x}))^2\]
+        \item When we minimize for $f$, the first two terms in the RHS of the equation are constant, leaving the third to be the squared loss.
+        Minimizing for $\sigma^2$ is an independent operation and will be touched on later.
+        \item A disadvantage to using the squared loss is that mislabelled points in the source dataset can have an undue effect on the model.
+        Higher errors will be be punished with quadratically growing strenght, which lets \tbf{outliers} to negatively impact the model.
+        \item Some loss functions that diminish the influence of outliers are the absolute value loss:
+        \[l(\hat{y},y) = |\hat{y}-y|\]
+        and the \tbf{Huber loss}, a combination of the squared loss and the absolute loss:
+        \[
+        L(y, \hat{y}) = 
+        \begin{cases}
+            \frac{1}{2}(y-\hat{y})^2 \text{ if } |y-\hat{y}| \leq 1\\
+            (|y-\hat{y}|-\frac{1}{2}) \text{ otherwise }
+        \end{cases}
+        \]
+        which is quadratic in the proximity of 0 error, and linear otherwise. The $-\frac{1}{2}$ is added for continuity, plot the equations in a 3D grapher to see why.
+        \item Although the absolute value loss function might seem invalid due to its point of non-differentiability, a slight generalization of the
+        derivative called the \tbf{subgradient}, can handle this point. On a practical level, gradient descent will never reach the point with
+        perfect precision, so we can assume that derivatives of $|\epsilon|$ for any $\epsilon>0$ is always defined.
+    \end{itemize}
+
+    \subsubsection{The Least-Squares Model}
+
+    \begin{itemize}
+        \item A linea model on an input $\mbf{x}$ is defined as:
+        \[f(\mbf{x})= \mbf{w}^{\top}\mbf{x}+b\]
+        where $\mbf{w} \sim (c)$ and $b \in \mathbb{R}$ (the bias) are trainable parameters.
+        \item The intuition is that given an input $\mbf{x}$ and parameters $\mbf{w}$ both holding the same number of features and parameters,
+        each feature of the input will be multiplicated by its respective parameter to produce a number $\in \mathbb{R}$. This number will then be 
+        added to the bias $b$.
+        \item The bias term can be avoided when assuming that a 1 exists as the last feature of $\mbf{x}$:
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=2in]{../miscImages/modifiedLinearModel.png} 
+            \label{fig:example}
+        \end{figure}
+        \item Comibining the linear model, the squared loss, and the empirical risk minimization problem, the \tbf{least-squares regression problem} is:
+        \[
+        \mbf{w}^*,b^*= \arg_{w,b}\min \frac{1}{n} \sum^n_{i=1}(y_i-\mbf{w}^{\top}\mbf{x}_i-b)^2 
+        \]
+        \item In code, the linear model can be described as:
+        \begin{lstlisting}
+def linear_model (w: Float[Tensor, "c"],
+        b: Float
+        x: Float[Tensor, "n c"])
+        -> Float[Tensor, "n"]:
+    return X @ w + B
+        \end{lstlisting}
+        \item If we rewrite the least-squares in \tbf{vectorized} form, we can achieve optimal computing efficiency: \\
+        The input in vectorized form:
+        \[
+        \mbf{X} = 
+        \begin{bmatrix}
+        \mbf{x}_1^{\top} \\
+        \vdots \\
+        \mbf{x}_n^{\top}
+        \end{bmatrix}
+        \sim (n,c)
+        \]
+        The output in vectorized form:
+        \[
+        y = 
+        \begin{bmatrix}
+            y_1, \cdots, y_n
+        \end{bmatrix}
+        ^{\top}
+        \]
+        The output model for a batch of values is:
+        \[f(\mbf{X})=\mbf{Xw}+1b\] 
+        \item A note: the ordering of the rows of the input and output do not matter the as the changes will be reflected in $f(\mbf{X})$. This concept is 
+        called \tbf{permutation variance} and will be touched on later.
+        \item The vectorized least-squares problem becomes:
+        \[LS(\mbf{w},b)=\frac{1}{n}||\mbf{y}-\mbf{Xw}-\mbf{1}b||^2\]
+    \end{itemize}
 \end{document}
