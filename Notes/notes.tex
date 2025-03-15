@@ -488,4 +488,168 @@ def linear_model (w: Float[Tensor, "c"],
         \item The vectorized least-squares problem becomes:
         \[LS(\mbf{w},b)=\frac{1}{n}||\mbf{y}-\mbf{Xw}-\mbf{1}b||^2\]
     \end{itemize}
+    \subsubsection{Solving the Least-Squares Problem}
+    \begin{itemize}
+        \item Applying differentiation to the least-squares equation, we get the gradient:
+        \[\nabla LS(\mbf{w})=\mbf{X}^{\top}(\mbf{Xw-y})\]
+        The global minimum can then be found by setting the gradient to 0:
+        \[
+            \mbf{X}^{\top}(\mbf{Xw-y}) = 0 \Rightarrow \mbf{X}^{\top}\mbf{Xw} = \mbf{X}^{\top}\mbf{y}
+        \]
+        Solving for the optimal parameters $\mbf{w}$ leads us to this:
+        \[\mbf{w}_*=(\mbf{X}^{\top}\mbf{X})^{-1}\mbf{X^{\top}y}\]
+        \item The matrix $\mbf{(X^{\top}X)}^{-1}\mbf{X^{\top}}$ is called the \tbf{pseudoinverse} of the non-square matrix $\mbf{X}$. This inversion is not 
+        always possible: for example, if one features is a scalar multiple of another. 
+        \item When implementing the numerical solution to this problem, we must know when to stop. We can do this by evalutating the difference between 
+        two iterations for some numerical threshold $\epsilon > 0$. 
+        \[||\mbf{w}_{t+1}-\mbf{w}_t||^2 < \epsilon\]
+        \item An implementation of solving for the solution using gradient descent:
+        \begin{lstlisting}
+def least_squares_gd(X: Float[Tensor, "n c"],
+                     y: Float[Tensor, "n"],
+                     learning_rate=1e-3) \
+                     -> Float[Tensor, "c"]:
+    # Initializing the parameters
+    w = torch.randn((X.shape[1], 1))
+    
+    # Fixed number of iterations
+    for i in range(15000):
+        # Note the sign: the derivative has a minus!
+        w = w + learning_rate * X.T @ (y - X @ w)
+    return w
+        \end{lstlisting}
+    \item Once training has finished, $\sigma ^2$ can also be optimized:
+    \[\sigma_*^2 = \frac{1}{n}\sum^n_{i=1}(y_i-\mbf{w}_*^{\top}\mbf{x}_i)^2\]
+    \end{itemize}
+    \subsubsection{Some Computational Considerations}
+    \begin{itemize}
+        \item A matrix $\mbf{X}^{\top}X$ is well conditioned if the solution of the system remains stable and accurate regardless of small changes to the
+        input. if we have an unstable system, the quality of the solution may degrade by a large amount and large numerical errors may arise.
+        \item Computing the vector-product $\mbf{Xw}$ can help avoid quadratic time complexity in the equation for the gradient.
+        \item This can lead to linear time complexity in both $c$ and $n$.
+        \item Such optimization measures are necessary for \tbf{reverse-mode automatic differentiation} a.k.a \tbf{back-propagation}.
+    \end{itemize}
+    \subsubsection{Regularizing the Least-Squares Solution}
+    \begin{itemize}
+        \item When the matrix $\mbf{X}$ is singular, we can modify the problem to achieve a solution which is "as close as possible"
+        to the original one.
+        \item Adding a small multiple $\lambda > 0$ of the identity matrix to the matrix being inverted:
+        \[\mbf{w}^* = (\mbf{X^{\top}X}+\lambda \mbf{I})^{-1} \mbf{X^{\top}y}\]
+        Going back to the modified optimization problem:
+        \[LS-Reg(\mbf{w})= \frac{2}{n}||\mbf{y-Xw}||^2+\frac{\lambda}{2}||\mbf{w}||^2\]
+        \item This now becomes the regularized least-squares.
+    \end{itemize}
+    \subsection{Linear Models for Classification}
+    \begin{itemize}
+        \item Recall that $m$ defines the number of classes. To find the classification, requiring the model to return a certain integer is not a good idea.
+        Instead we can regress on a real value $\tilde{y_i} \in [1, m]$. During inference, given the output $\hat{y_i}=f(\mbf{x_i})$, 
+        we can map back to the original domain using:
+        \[\text{Predicated class} = \operatorname{round}(\hat{y_i})\]
+        \item However, this presents some disadvantages. By defining certain classifications as being close to each other i.e. class 2 is "closer" to class 3 
+        than class 4, we trick the model into thinking that class 2 and class 3 are more related than class 2 and class 4. In reality, class 2 may be dog, class 3 a dolphin,    
+        and class 4 a cat.
+        \item A method of avoiding this problem is using a \tbf{one-hot encoded} version of $y$, which we denote by $\mbf{y}^{oh} \sim$ Binary($m$).
+        \[
+        \textcolor{gray}{[}\mbf{y}^{oh}\textcolor{gray}{]_j}
+        \begin{cases}
+            1 \text{ if } y = j \\
+            0 \text{ otherwise}
+        \end{cases}
+        \]
+        \item This notation provides some advantages in that the Euclidean distance between two classes is either 0 (same class) or $\sqrt{2}$ (different classes).
+        \item This approach is not vaiable since this is discrete and we need a continiuous representation to train our dataset through gradient descent.
+        \item A more better and more elegant solution exists in the form of \tbf{logistic regression}.
+    \end{itemize}
+    \subsubsection{The Probability Simplex and the Softmax Function}   
+    \begin{itemize}
+        \item The \tbf{probability simplex} $\Delta _n$ is the set of vectors $\mbf{x} \sim \Delta(n)$ such that:
+        \[x_i \geq 0, \sum_i x_i=1\]
+        \item Essentially, the probability simplex is the set of vectors whose elements describe the probability of the output classes and who all sum up to 1.
+        Given a value $\mbf{x} \in \Delta_n$, we can project to the predicted class using:
+        \[\arg_i \max{\mbf{x}_i}\]
+        \item An example: let the model output the following:
+        \[[0.2,0.3, 0.4]\]
+        where class 0 is dog, class 1 is cat, and class 2 is bird. In this case, the maximum would be 0.4 and as such, the model would ouput bird as the output class.
+        \item The previous method of linear regression assumed $y$ would be a scalar value. In this new implementation, we take $y$ to be an $m$-dimensional vector:
+        \[\mbf{y = Wx+b}\]
+        where $\mbf{W} \sim (m,c)$ is $m$ linear regressions models running in parallel and $b \sim (m)$.
+        \item After computing $\mbf{y}$, it is not guaranteed to be in the simplex. That is why we must use a \tbf{softmax} function to project the output
+        inside the simplex: \\
+        For a generic vector $\mbf{x} \sim (m)$:
+        \[\textcolor{gray}{[}\operatorname{softmax(\mbf{x})}\textcolor{gray}{]_i} = \frac{\operatorname{exp}(x_i)}{\sum_j \operatorname{exp}(x_j)}\]
+        \item Breaking down the formula, this is what it does:
+        First, exponentiation converts the numerator into a positive value.
+        \[h_i=\operatorname{exp}(x_i)\]
+        Next, we compute a normalization factor as the sum of exponentiated elements of the vector:
+        \[Z = \sum_j h_j\]
+        The output of the softmax is given by dividing $h_i$ by $Z$, ensuring all elements of the final output vector after the softmax sum to 1:
+        \[y_i = \frac{h_i}{Z}\]
+        \item We can also add another parameter $\tau > 0$ called the temperature:
+        \[\operatorname{softmax}(\mbf{x};\tau)=\operatorname{softmax}(\mbf{x}/\tau)\]
+        \item The softmax keeps the order between elements intact, but the temperature influences how far away they are from each other.
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=4in]{../miscImages/tempSoftmax.png} 
+            \caption{Example of softmax function with temperature set to 1(b), 10(c), and 100(d)}
+            \label{fig:example}
+        \end{figure}
+        \item There are certain limiting cases:
+        \begin{align*}
+            \lim_{\tau \rightarrow \infty} \operatorname{softmax}(\mbf{x};\tau)= 1/c \\
+            \lim_{\tau \rightarrow 0} \operatorname{softmax}(\mbf{x};\tau) = \arg _i \max \mbf{x}
+        \end{align*}
+    \end{itemize}
+    \subsubsection{The Logistic Regression Model}
+    \begin{itemize}
+        \item Bringing together softmax and the parameterized output linear model, we get:
+        \[\hat{y}=\operatorname{softmax}(\mbf{Wx + b})\]
+        The prenomalized outputs $\mbf{h=Wx+b}$ are called the logits of the model.
+        \item Covering the loss function, we can call upon previously discussed topics and derive this:
+        \[p(\mbf{y}^{oh}|\mbf{\hat{y}}) = \prod_i \hat{y}_i^{y_i^{oh}}\]
+        \item The \tbf{cross-entropy} loss function between $\mbf{y}^{0h}$ and $\mbf{\hat{y}}$ is given by:
+        \[\operatorname{CE}(\mbf{y}^{oh}, \mbf{\hat{y}})= - \sum _i y_i^{oh} \log(\hat{y}_i)\]
+        \item Given that only one value of $\mbf{y}^{oh}$ will be non-zero corresponding to the true class $y = \arg _i \max \{y_i^{oh}\}$, we can simplify the
+        loss as:
+        \[\operatorname{CE}(y,\mbf{\hat{y}})=- \log (\hat{y}_y)\]
+        \item It is evident that minimizing CE loss is equivalent to maximizing the output probability corresponding to the true class. Of course, the presence 
+        of the softmax function implies that an increase in the probabilithy of one ouput leads to a decrease in the probability of all other outputs. Putting everything together,
+        we get the \tbf{logistic regression optimization problem}.
+        \[\operatorname{LR}(\mbf{W,b}) = \frac{1}{n}\sum_{i=1}^n\operatorname{CE}(\mbf{y}_i^{oh}, \operatorname{softmax}(\mbf{Wx}_i+\mbf{b}))\]
+    \end{itemize}
+    \subsection{Additional Topics on Classification}
+    \subsubsection{Binary Classification}
+    \begin{itemize}
+        \item With the special case of $m=2$, we have the problem of \tbf{binary classification} also known as \tbf{concept learning}.
+        \item Normally, the function would return an output made up of two elements, however this is unnecessary considering the softmax function 
+        ensures all probabilities sum up to 1. As such, we can rely on the function producing one output $\in$ [0,1] and derive the classification as:
+        \[
+        \text{Predicted class} = \operatorname{round}(f(\mbf{x})) = 
+        \begin{cases}
+            0 \text{ if } f(\mbf{x}) \leq 0.5 \\
+            1 \text{ otherwise }
+        \end{cases}
+        \]
+        \item To achieve the normalization, the first output of a two-valued softmax can be rewritten as:
+        \[\frac{\operatorname{exp}(x_1)}{1+\operatorname{exp}(x_1)}\]
+        Note: we assume $x_0$ to be 0, hence $e^0 = 1$ is in the denominator.
+        \item Simplifying by dividing by $\exp(x_1)$, we get the \tbf{sigmoid} function $\sigma(s) : \mathbb{R} \rightarrow [0,1]$ function:
+        \[\sigma(s) = \frac{1}{1+\exp(-s)}\]
+        The sigmoid maps any real number to a number between 0 and 1.
+        \item The \tbf{binary logistic regression} model is obtained by combining a one-dimensional linear model with a sigmoid scaling of the output:
+        \[f(\mbf{x})= \sigma(\mbf{w^{\top}x}+b)\]
+        \item The cross-entropy simplifies down to:
+        \[\operatorname{CE}(\hat{y},y)=\underbrace{-y\log(\hat{y})}_{\text{class 1 loss}}\underbrace{-(1-y)\log(1-\hat{y})}_{\text{class 2 loss}}\]
+        \item In the binary classification case, we can solve the problem with two equivalent approaches: (a) a two-valued model with standard softmax,
+        or (b) a simplified one-valued output with a sigmoid output transformation.
+        \item The gradient of the binary logistic regression model with respect to $\mbf{w}$ is:
+        \[\nabla \operatorname{CE}(f(\mbf{x}),y)=(f(\mbf{x})-y)\mbf{x}\]
+        which is similar to the linear least-squares regression:
+        \[\nabla \operatorname{LS}(\mbf{w})=\mbf{X^{\top}(Xw-y)}\]
+        \item We may also rewrite our model as:
+        \[\underbrace{\mbf{w^{\top}x}+b}_{\text{logits}}=\underbrace{\log(\frac{y}{1-y})}_{\sigma^{-1}(y)}\]
+    \end{itemize}
+    \subsubsection{The logsumexp Trick}
+    \begin{itemize}
+        \item 
+    \end{itemize}
 \end{document}
