@@ -650,6 +650,60 @@ def least_squares_gd(X: Float[Tensor, "n c"],
     \end{itemize}
     \subsubsection{The logsumexp Trick}
     \begin{itemize}
-        \item 
+        \item Consider the $i$-th term of the cross entropy in terms of the logits $\mbf{p}$:
+        \[-\log(\frac{\exp p_i}{\sum_j \exp p_j})\]
+        Due to the unknown magnitude of the logits, the exponentiation of the logits can cause numerical computing errors.
+        \item To solve, we can rewrite as:
+        \[-p_i+\log(\sum_j \exp p_j)\]
+        The first term does not suffer from instabilities, and the second term can be taken care of by using a scalar sum/difference 
+        $c$ which won't change the final result when added back in:
+        \[\operatorname{logsumexp}(\mbf{p})=\operatorname{logsumexp}(\mbf{p}-c)+c\]
+    \end{itemize}
+    \subsubsection{Calibration and Classification}
+    \begin{itemize}
+        \item We must highlight a key difference in the conclusions we get from a model's output. \\
+        The following sentence is justified:
+        \begin{quotation}
+            \say{The predicted class of $f(\mbf{x})$ is $\arg _i \max \textcolor{gray}{[}f(\mbf{x})\textcolor{gray}{]_i}$.}
+        \end{quotation}
+        But this one is not:
+        \begin{quotation}
+            \say{The probability of $\mbf{x}$ being of class $i$ is \textcolor{gray}{[}$f(\mbf{x})\textcolor{gray}{]_i}$.}
+        \end{quotation}
+        \item When the confidence scores of the network match the probability of a given prediction being correct,
+        the network's outputs are \tbf{calibrated}.
+        \item Different predictions may lead to different costs, and a \emph{cost matrix} assigning a cost $C_{ij}$ for 
+        any input of class $i$ predicted as class $j$. An example is shown below:
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=2in]{../miscImages/costMatrixExample.png} 
+            \caption{Example of cost matrix for a classification problem having assymetric costs of missclassification}
+            \label{fig:example}
+        \end{figure}
+        This may very well be the cost matrix for a classification model used in medical diagnosis. A false negative may be much more harmful than a false positive.
+        \item A cost matrix $C \sim (m,m)$ can be created for a multiclass problem and used to minize the expected cost assigned by our model:
+        \[\arg _i \min \sum^m_{j=1}C_{ij}\textcolor{gray}{[}f(\mbf{x})\textcolor{gray}{]_j}\]
+        Essentially, you want to predict something by minimizing the combination of its original probability with the associated costs of choosing it.
+    \end{itemize}
+    \subsubsection{Estimating the Calibration Error}
+    \begin{itemize}
+        \item To estimate the calibration of a model, we can bin the predictions like this:
+        \begin{itemize}
+            \item Split the interval [0.1] into $b$ equispaced bins such that each bin is of size $1/b$. 
+            \item Take a validation dataset of size $n$ and denote by $\mathcal{B}_i$, the elements whose confidence falls into bin $i$.
+            \item For each bin, we can calculate the average confidence $p_i$ of the model and the average accuracy $a_i$.
+        \end{itemize}
+        \item To have a single scalar metric of calibration, we can use the \tbf{expected calibration error}:
+        \[\text{ECE} = \sum_i \underbrace{\frac{|\mathcal{B}_i|}{n}}_{\text{bin $i$}}\overbrace{|a_i-p_i|}^{calibration}\]
+        The calibration is intended to punish instances where accuracy and confidence are not aligned together (low confidence/high accuracy \& vice versa)
+        \item A low expected calibration error suggests that the prediction confidence is aligned with the accuracy of the prediction.
+        \item If the model is found to be calibrated, the model will need to be modified. We can do this by rescaling the predictions
+        via temperature scaling or optimizing with a different loss function.
+        \item As opposed to direct calibration of a model, we can do \tbf{conformal prediction}. Take a threshold probability $\gamma$.
+        We can take the set of classes predicted by the modle whose corresponding probability is higher than $\gamma$.  
+        \[\mathcal{G}(\mathbf{x})=\{i \mid \textcolor{gray}{[}f(\mbf{x})\textcolor{gray}{]_i} > \gamma\}\]
+        Now the set $\mathcal{G}(\mbf{x})$ is the set of potential classes.
+        \item Essentially, we're defining a bare minimum level of probability of choosing the correct class. The minimum is $\gamma$, 
+        and the acceptable error is $1 - \gamma = \alpha$. 
     \end{itemize}
 \end{document}
