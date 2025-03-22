@@ -633,6 +633,9 @@ def least_squares_gd(X: Float[Tensor, "n c"],
         \[p(\mbf{y}^{oh}|\mbf{\hat{y}}) = \prod_i \hat{y}_i^{y_i^{oh}}\]
         \item The \tbf{cross-entropy} loss function between $\mbf{y}^{0h}$ and $\mbf{\hat{y}}$ is given by:
         \[\operatorname{CE}(\mbf{y}^{oh}, \mbf{\hat{y}})= - \sum _i y_i^{oh} \log(\hat{y}_i)\]
+        The cross-entropy loss function is widely used for classification tasks, especially in multi-class problems. 
+        It measures the dissimilarity between the true probability distribution (actual labels) and the predicted probability distribution (model's predictions).
+        The goal of cross-entropy is to quantify how well the predicted probabilities match the actual labels.
         \item Given that only one value of $\mbf{y}^{oh}$ will be non-zero corresponding to the true class $y = \arg _i \max \{y_i^{oh}\}$, we can simplify the
         loss as:
         \[\operatorname{CE}(y,\mbf{\hat{y}})=- \log (\hat{y}_y)\]
