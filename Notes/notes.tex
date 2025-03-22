@@ -17,6 +17,7 @@
 \usepackage[shortlabels]{enumitem}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{hyperref}
 
 \title{\vspace{-3cm}Alice in Wonderland ML Notes}
 \author{}
@@ -26,8 +27,6 @@
 \newcommand{\tit}[1]{\textit{#1}}
 \newcommand{\mbf}[1]{\mathbf{#1}}
 
-\begin{document}
-\maketitle
 
 \lstset{
     language=Python,
@@ -35,7 +34,18 @@
     keywordstyle=\color{blue},
     commentstyle=\color{gray},
     stringstyle=\color{red}
+    }
+    
+\hypersetup{
+    colorlinks=true,       % Makes links colored
+    linkcolor=blue,        % Color of internal links (e.g., table of contents)
+    urlcolor=red
 }
+
+\begin{document}
+        
+\maketitle
+
 \setcounter{section}{1}
 \section{Mathemacial Preliminaries}
 
