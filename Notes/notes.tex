@@ -18,6 +18,8 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{hyperref}
+\usepackage{mathtools}
+
 
 \title{\vspace{-3cm}Alice in Wonderland ML Notes}
 \author{}
@@ -735,4 +737,46 @@ def least_squares_gd(X: Float[Tensor, "n c"],
         and the acceptable error is $1 - \gamma = \alpha$. 
     \end{itemize}
     \section{Fully-Connected Models}
+    \subsection{The Limitations of Linear Models}
+    \begin{itemize}
+        \item As a review, linear models work by multiplying each feature of the input with a weight, then adding a bias to get the complete result.
+        \item Linear models do not work well when features are not independent of each other.
+        \item For example, two clients of a bank who are identical in all aspects except for their income, with $\mbf{x'}$ having double the income of 
+        of $\mbf{x}$. If $f$ is a linear model with no bias, we have:
+        \[
+f(\mathbf{x}') = \overbrace{f(\mathbf{x})}^{\text{\scriptsize Original}} + \underbrace{w_j x_j}_{\mathclap{\text{\scriptsize Change induced by } \mathbf{x}_j = 2x_j}}\]
+        \item A consequence is that the change in input reflects a similar sized change in the output. This will not work for relationships where features can affect other features or certain combinations of features have different outputs.
+        Take for example this scenario where we're trying to score the users:
+        \emph{an income of 1500 is low, except if the age $<$ 30}.
+    \end{itemize}
+
+    \subsection{Composition and Hidden Layers}
+    \begin{itemize}
+        \item Imagining our model $f$ is a composition of two trainable operations results in : 
+        \[f(\mbf{x}) = (f_2 \odot f_1)(\mbf{x}) = f_2(f_1(\mbf{x}))\]
+        Being more specific, we describe the relation as:
+        \begin{align*}
+            \mbf{h} = f_1(\mbf{x}) = \mbf{W}_1\mbf{x} + \mbf{b}_1 \\
+            y = f_2(\mbf{h}) = \mbf{w}_2^\top \mbf{h} + b_2
+        \end{align*}
+        But doing this will result in the two projections collapsing into a single one:
+        \[y = (\underbrace{\mbf{w_2 ^\top \mbf{W}_1}}_{\mbf{A}}) \mbf{x} 
+        + (\underbrace{\mbf{w}_2 ^\top \mbf{b}_1 + b_2}_{\mbf{c}}) 
+        = \mbf{Ax+c}\]
+        \item The idea behind \tbf{fully-connected} (FC) models, also known as \tbf{multi-layer perceptrons} (MLPs), is to insert a 
+        simple elementwise non-linearity $\phi: \mathbb{R} \rightarrow \mathbb{R}$ in-between projections to avoid the collapse:
+        \[\mbf{h} = f_1(\mbf{x}) = \phi(\mbf{W_1x + b_1})\]
+        \[y = f_2(\mbf{h}) = \mbf{w_2 ^\top h} + b_2\]
+        The function $\phi$ can be non-linearity such as a polynomial, a square-root, or the sigmoid function $\sigma$. 
+        A good choice for the function is something which is non-linear enough to prevent collapse, but linear enough to preserve the original identity in its derivative. \\
+    
+        A good default choice is the \tbf{rectified linear unit} (ReLU)
+        \item The \tbf{rectified linear unit} is defined elementwise as:
+        \[\operatorname{ReLU}(s) = \operatorname{max}(0,s)\]
+        \item With the addition of $\phi$, we can chain as many transformations as we want:
+        \[y = \mbf{w}_l ^\top \]
+        
+
+    \end{itemize}
+    
 \end{document}
