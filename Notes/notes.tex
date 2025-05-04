@@ -774,9 +774,8 @@ f(\mathbf{x}') = \overbrace{f(\mathbf{x})}^{\text{\scriptsize Original}} + \unde
         \item The \tbf{rectified linear unit} is defined elementwise as:
         \[\operatorname{ReLU}(s) = \operatorname{max}(0,s)\]
         \item With the addition of $\phi$, we can chain as many transformations as we want:
-        \[y = \mbf{w}_l ^\top \]
+        \[y = \mbf{w}_l ^\top \phi (\mbf{W} _{l - 1}(\phi (\mbf{W}_{l-2} \phi (\hdots) + \mbf{b}_{l-2}))+\mbf{b}_{l-1})+b_l\]
         
 
     \end{itemize}
-    
 \end{document}
