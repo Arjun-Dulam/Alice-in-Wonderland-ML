@@ -775,7 +775,22 @@ f(\mathbf{x}') = \overbrace{f(\mathbf{x})}^{\text{\scriptsize Original}} + \unde
         \[\operatorname{ReLU}(s) = \operatorname{max}(0,s)\]
         \item With the addition of $\phi$, we can chain as many transformations as we want:
         \[y = \mbf{w}_l ^\top \phi (\mbf{W} _{l - 1}(\phi (\mbf{W}_{l-2} \phi (\hdots) + \mbf{b}_{l-2}))+\mbf{b}_{l-1})+b_l\]
+        \end{itemize}
         
+        \section*{\normalsize On the Terminology in Differentiable Models}
+        This will serve as an summary of terminology.
+        \begin{itemize}
+            \item Each $f_i$ is called a \tbf{layer} of the model, with $f_l$ being the \tbf{output layer}, $f_i, i = 1, \hdots, l - 1$ the \tbf{hidden layers}.
+            \item With some notation overloading, $\mbf{x}$ is the input layer.
+            \item With this terminology, we can restate the definition of the \tbf{fully-connected layer} in batched form:
+            \item For a batch of $n$ vectors, each of size $c$, represented as a matrix $\mbf{X} \sim (n, c)$, a \tbf{fully-connected} (FC) layer is defined as:
+            \[\operatorname{FC}(\mbf{X}) = \phi (\mbf{XW + b})\]
+            \item The parameters of the layer are the matrix $\mbf{W} \sim (c',c)$ and the bias vector $\mbf{b} \sim (c')$, for a total of $(c' + 1)c$ parameters (assuming $\phi$ does not have any parameters).
+            Its hyper-parameters are the width $c'$ and the non-linearity $\phi$. 
 
-    \end{itemize}
+            Reminder: A hyperparameter is one set by the user to help define the behavior of the model. 
+        \end{itemize}
+
+        
+        
 \end{document}
