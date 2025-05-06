@@ -788,7 +788,43 @@ f(\mathbf{x}') = \overbrace{f(\mathbf{x})}^{\text{\scriptsize Original}} + \unde
             \item The parameters of the layer are the matrix $\mbf{W} \sim (c',c)$ and the bias vector $\mbf{b} \sim (c')$, for a total of $(c' + 1)c$ parameters (assuming $\phi$ does not have any parameters).
             Its hyper-parameters are the width $c'$ and the non-linearity $\phi$. 
 
-            Reminder: A hyperparameter is one set by the user to help define the behavior of the model. 
+            \tbf{Reminder:} A hyperparameter is one set by the user to help define the behavior of the model. 
+
+            \tbf{Note:} The above definition is one from the book and may contain an error. The expression $\mbf{XW}$ is not valid if $\mbf{X}$ is of dimensions $n \times c$
+            and $\mbf{W}$ is of dimensions $c' \times c$. The no. of columns in the first matrix does not match the no. of rows in the second. The product $\mbf{XW}$ should be of dimensions $n \times c'$.
+
+            \tbf{Note:} The addition of the product $\mbf{XW}$ and the bias $\mbf{b}$ might be seen as invalid due to dimension mismatches, however ML frameworks can extend the bias' dimensions to allow addition to occur. 
+            So the result of $\mbf{XW} + \mbf{b}$ would have the dimensions $n \times c'$.
+
+            \item The outputs $f_i(\mbf{X})$ are called the \tbf{activations} of the layer. We can also differentiate between the \tbf{pre-activation} and the \tbf{post-activation} (before and after the non-linearity has been applied).
+            \item An implementation of a fully-connected layer using PyTorch:
+            \begin{lstlisting}
+import torch
+import torch.nn as nn
+from torch.nn.functional import relu
+
+class FullyConnectedLayer(nn.Module):
+    def __init__(self, c: int, cprime: int):
+        super().__init__()
+        # Initialize the parameters
+        self.W = nn.Parameter(torch.randn(c, cprime))
+        self.b = nn.Parameter(torch.randn(1, cprime))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return relu(x @ self.W + self.b)
+            \end{lstlisting}
+            
+            \item The non-linearity $\phi$ can be called the \tbf{activation function} and each output of $f_i$ is called a \tbf{neuron}. The width (shape of the output) of each layer is a hyperparameter that can be set by the user.
+            The width only affects the input going into the next layer.
+        \end{itemize}
+        \subsubsection{Approximation Properties of MLPs}
+        \begin{itemize}
+            \item Training MLPs is similar to training linear models where we minimize a loss function.
+            \item Linear models has one global minimum that gradient descent would be guided toward. However, given the non-linearity of multiple layers, there can exist 
+            many local minima with no guranatee that gradient descent will the find the global minimum. Regardless, research has shown that non-convex models can still provide good performance.
+            \item The question naturally arises, if linear models can only solve tasks which are linearly separable, what class of tasks can non-linear models be used for? 
+            
+            Having a single hidden layer is enough to have 
         \end{itemize}
 
         
