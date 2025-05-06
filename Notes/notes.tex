@@ -824,9 +824,28 @@ class FullyConnectedLayer(nn.Module):
             many local minima with no guranatee that gradient descent will the find the global minimum. Regardless, research has shown that non-convex models can still provide good performance.
             \item The question naturally arises, if linear models can only solve tasks which are linearly separable, what class of tasks can non-linear models be used for? 
             
-            Having a single hidden layer is enough to have 
+            Having a single hidden layer is enough to have \tbf{universal approximation} capabilities.
+            \item \tbf{Universal approximatino of MLPs:} Given a continuous function $f : \mathbb{R}^d \rightarrow \mathbb{R}$, we can always find a model $f(\mbf{x})$ that is a MLP with a single hidden layer such that:
+            \[|f(\mbf{x}) - g(\mbf{x})| \leq \epsilon, \forall \mbf{x}\]
+            \item In english, what this means is that given a function, we can find a model that can approximate that function with a certain degree of acceptable error $\epsilon$. 
         \end{itemize}
-
-        
-        
+        \subsection{Stochastic Optimization}
+        \begin{itemize}
+            \item When $n$ (the size of the dataset) grows very large, preserving the linear time complexity becomes unreasonable especially when $n$ is in the order of 
+            $10^4$ or more.
+            \item A solution to this problem is to use subsets of data to computer descent direction. To this end, for iteration $t$ of gradient descent we sample a subset $\mathcal{B}_t \subset \mathcal{S}_n$ of $r$ points (with $r \ll n$).
+            Shuffling the dataset, splitting into batches, then training with each subset of the data, and finally reshuffling the dataset before training again. 
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=6in]{../miscImages/stochasticOptimization.png} 
+                \caption{Building the mini-batch sequence}
+                \label{fig:example}
+            \end{figure}
+            \item Computing the approximated loss only considering the minibatch as:
+            \[\overset{\sim}{L}_t = \underbrace{\frac{1}{r} \sum _{(x_i, y_i) \in \mathcal{B}_t}}_{\text{Mini-batch}}l(y_i, f(x_i)) \approx \underbrace{\frac{1}{n} \sum _{(x_i, y_i) \in \mathcal{S}_n}}_{\text{Full dataset}} l(y_i, f(x_i))\]
+            \item For the computation of the gradient and the loss for a batch, the complexity grows with $r$. Having lower values of $r$ results in higher gradient variance, while higher $r$ results in slower and mroe precise iterations.
+            \item Gradient descent applied on mini-batches of data is called \tbf{stochastic gradient descent} (SGD). 
+            \item How can we create the mini-batches
+            \item 
+        \end{itemize}
 \end{document}
