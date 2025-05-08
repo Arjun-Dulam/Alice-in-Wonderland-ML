@@ -905,6 +905,29 @@ class FullyConnectedLayer(nn.Module):
                 \mbf{h}_l &= f_l(\mbf{x}, \mbf{w}_l) \\
                 y &= \sum \mbf{h}_l
             \end{align*}
-            
+            This is the \tbf{evaluation trace} of the program. The first $l - 1$ operations represent several layers of the differentiable model, operaiton $l$ can be a per-input loss (e.g. cross-entropy).
+            The final operation sums up the losses and creates a scalar value to represent the total loss. This whole program can be abbreviated as $F(\mbf{x})$.
+            \item \tbf{Automatic Differentiation}:The gradient of the loss function can be calculated by using the chain rule and applying it to the loss functions in the previous layers of the model:
+            \[\operatorname{AD}(\operatorname{F}(\mbf{x})) = \{ \partial_{\mbf{w}_i}y \} ^L_{i = 1}\]
+            \item There are two major classes of AD: \tbf{forward-mode} and \tbf{backward-mode}. Backward mode, also known as \tbf{back-propogation}, is much more efficient. 
+        \end{itemize}
+        \subsubsection{Numerical and Symbolic Differentiaion}
+        \begin{itemize}
+            \item There are two ways to differentiate functions. We can do \tbf{numerical integration} which applies the fundamental theorem of calculus:
+            \[f'(x) = \lim_{h \rightarrow 0} \frac{f(x+h) - f(x)}{h}\]
+            However this requires two function calls and is computationally inefficient.
+            \item Another approach is \tbf{symbolic differentiation} where we use a symbolic engine to pre-compute the full, symbolic equation of the derivative. One such output could be:
+            \[f(x) = a\operatorname{sin}(x) + bx \operatorname{sin}(x)\]
+            In a realistic implementation, we would compute the value $\operatorname{sin}(x)$ and store it so we would not have to compute it again.
+        \end{itemize}
+        \subsection{Forward-Mode Automatic Differentiation}
+        \begin{itemize}
+            \item \tbf{Forward Automatic Differentiation} is a concept wherein we build up the gradient for the loss function at the very las layer starting from the first layer.
+            \item Consider an example:
+            \[\mbf{h} = f_1(\mbf{x}), \mbf{y} = f_2(){\mbf{h}})\]
+            Their gradients are:
+            \[\partial_\mbf{x}\mbf{y} = \partial_\mbf{h}\mbf{y} \cdot \partial _\mbf{x} \mbf{h}\]
+            We start by computing the first layer and its gradient, so $f_1$ and $\partial_\mbf{x} \mbf{h}$ will be computed. We then compute the gradient for $f_2$ and multiply it with the gradient of the previous layer.
+            Continuing this cycle for subsequent layers will result in the gradient for the total loss function. 
         \end{itemize}
 \end{document}
