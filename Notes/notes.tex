@@ -858,7 +858,32 @@ class FullyConnectedLayer(nn.Module):
             \item Looking through the frame of neurology, the weights $\mbf{w} ^\top$ in the dot product $\mbf{w}^\top \mbf{x}$ were simple models of synapses, the bias $b$ was the threshold, and the neuron was activated when the sum of the inputs surpased the threshold.
             \[s = \mbf{w}^\top \mbf{x} - b, \phi(s) = \mathbb{I}_{s \geq 0}\]
             where $\mathbb{I}_b$ is an indicator funciton that is 1 if $b$ is true, else 0.
-            
-
+            \item This indicator function is not differentiable, so we cannot run gradient descent on it. As an alternative, we can use the sigmoid function with a tunable slope $a$ such that $\sigma_a(s) = \sigma(as)$. Therefore, we have:
+            \[\lim_{a \rightarrow \inf} \sigma _a (s) = \mathcal{I}_{s \geq 0}\]
+            \item Modern neural networks use ReLU:
+            \[ \operatorname{ReLU}(s) = 
+            \begin{cases}
+                s \text{ if } s \geq 0 \\
+                0 \text{ if } s < 0
+            \end{cases} \]
+            This function is not differentiable and can result in \emph{dead neurons} because all negative inputs are set to 0. To fix this, we can use the \tbf{Leaky ReLU}:
+            \[ \operatorname{LeakyReLU}(s) = 
+            \begin{cases}
+                s \text{ if } s \geq 0 \\
+                as \text{ otherwise}
+            \end{cases}\]
+            for a very small $a$ e.g. $a = 0.01$.
+            \item We can train a different $a$ for each neuron, since the funciton is differentiable w.r.t. $a$. Forcing the same $a$ on all neurons is not ideal as it would limit their flexibility to respont to diffeerent features of the input.
+            An activation function using the leaky ReLU is called a \tbf{parameteric ReLU} (PReLU). 
+            \item Fully-differentiable variants of ReLU are available, such as the \tbf{softplus}:
+            \[\operatorname{softplus}(s) = \operatorname{log}(1+\operatorname{exp}(s))\]
+            which does not pass through the origin and is always > 0.
+            \item The \tbf{exponential linear unit} (ELU):
+            \[\operatorname{ELU}(s) = 
+            \begin{cases}
+                s \text{ if } s \geq 0 \\
+                \operatorname{exp}(s) - 1 \text{ otherwise }
+            \end{cases}\]
         \end{itemize}
+        \section{Automatic Differentiaion}
 \end{document}
