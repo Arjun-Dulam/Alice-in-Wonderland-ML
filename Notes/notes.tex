@@ -886,4 +886,25 @@ class FullyConnectedLayer(nn.Module):
             \end{cases}\]
         \end{itemize}
         \section{Automatic Differentiaion}
+        \subsection{Problem Setup}
+        \begin{itemize}
+            \item Assume we have a set of \tbf{primitives}:
+            \[\mbf{y} = f_i(\mbf{x}, \mbf{w}_i)\]
+            Each primitive represents an operation on an input vector $\mbf{x} \sim (c_i)$, parameterized by vector $\mbf{w}_i \sim (p_i)$, and giving as output another vector $y \sim (c_1')$.
+            \item We assume for each primitive, we can calculation the partial derivatives w.r.t. to the input arguments. We can do this due to us selectively choosing differentiable models.
+            \[\tbf{Input Jacobian: } \partial _x[f(\mbf{x}, \mbf{w})] \sim (c',c)\] 
+            \[\tbf{Weight Jacobian: } \partial _x[f(\mbf{x}, \mbf{w})] \sim (c',p)\]
+        \end{itemize}
+        \subsubsection{Automatic Differentiation: Problem Statement}
+        \begin{itemize}
+            \item Consider a sequence of $l$ primitive calls, followed by final summation:
+            \begin{align*}
+                \mbf{h}_1 &= f_1(\mbf{x}, \mbf{w}_1) \\
+                \mbf{h}_2 &= f_2(\mbf{x}, \mbf{w}_2) \\
+                \vdots \\
+                \mbf{h}_l &= f_l(\mbf{x}, \mbf{w}_l) \\
+                y &= \sum \mbf{h}_l
+            \end{align*}
+            
+        \end{itemize}
 \end{document}
