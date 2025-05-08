@@ -845,7 +845,20 @@ class FullyConnectedLayer(nn.Module):
             \[\overset{\sim}{L}_t = \underbrace{\frac{1}{r} \sum _{(x_i, y_i) \in \mathcal{B}_t}}_{\text{Mini-batch}}l(y_i, f(x_i)) \approx \underbrace{\frac{1}{n} \sum _{(x_i, y_i) \in \mathcal{S}_n}}_{\text{Full dataset}} l(y_i, f(x_i))\]
             \item For the computation of the gradient and the loss for a batch, the complexity grows with $r$. Having lower values of $r$ results in higher gradient variance, while higher $r$ results in slower and mroe precise iterations.
             \item Gradient descent applied on mini-batches of data is called \tbf{stochastic gradient descent} (SGD). 
-            \item How can we create the mini-batches
-            \item 
+            \item How can we create the mini-batches? Sampling random datapoints can be computationally expensive with large datasets, so another approach is needed. We can begin by shuffling the dataset, selecting batches of consecutive elements, training with them, then shuffling again.
+            Assuming a database of size $n = br$, we will have $b$ batches of data with $r$ elements in them.
+            \item One complete loop of the shuffle/batch/train cycle is called an \tbf{epoch} of training. The amount of epochs in the training stage is a hyperparameter that can be set by the user. It is given by $\frac{n}{b}$. Setting the batch size will set the number of epochs.
+        \end{itemize}
+        \subsection{Activation Functions}
+        \begin{itemize}
+            \item Regarding the selection of the non-linearity funciton, any element-wise non-linearity function is valid, but not all of them have good performance or numerical stability.
+            For example, the non-linearity function
+            \[\phi(s) = s^p \]
+            does preserve linearity but with increasing quantities of $s$, the function becomes computationally expensive and numerically unstable.
+            \item Looking through the frame of neurology, the weights $\mbf{w} ^\top$ in the dot product $\mbf{w}^\top \mbf{x}$ were simple models of synapses, the bias $b$ was the threshold, and the neuron was activated when the sum of the inputs surpased the threshold.
+            \[s = \mbf{w}^\top \mbf{x} - b, \phi(s) = \mathbb{I}_{s \geq 0}\]
+            where $\mathbb{I}_b$ is an indicator funciton that is 1 if $b$ is true, else 0.
+            
+
         \end{itemize}
 \end{document}
