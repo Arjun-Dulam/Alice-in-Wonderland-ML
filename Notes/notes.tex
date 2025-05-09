@@ -851,13 +851,13 @@ class FullyConnectedLayer(nn.Module):
         \end{itemize}
         \subsection{Activation Functions}
         \begin{itemize}
-            \item Regarding the selection of the non-linearity funciton, any element-wise non-linearity function is valid, but not all of them have good performance or numerical stability.
+            \item Regarding the selection of the non-linearity function, any element-wise non-linearity function is valid, but not all of them have good performance or numerical stability.
             For example, the non-linearity function
             \[\phi(s) = s^p \]
             does preserve linearity but with increasing quantities of $s$, the function becomes computationally expensive and numerically unstable.
             \item Looking through the frame of neurology, the weights $\mbf{w} ^\top$ in the dot product $\mbf{w}^\top \mbf{x}$ were simple models of synapses, the bias $b$ was the threshold, and the neuron was activated when the sum of the inputs surpased the threshold.
             \[s = \mbf{w}^\top \mbf{x} - b, \phi(s) = \mathbb{I}_{s \geq 0}\]
-            where $\mathbb{I}_b$ is an indicator funciton that is 1 if $b$ is true, else 0.
+            where $\mathbb{I}_b$ is an indicator function that is 1 if $b$ is true, else 0.
             \item This indicator function is not differentiable, so we cannot run gradient descent on it. As an alternative, we can use the sigmoid function with a tunable slope $a$ such that $\sigma_a(s) = \sigma(as)$. Therefore, we have:
             \[\lim_{a \rightarrow \inf} \sigma _a (s) = \mathcal{I}_{s \geq 0}\]
             \item Modern neural networks use ReLU:
@@ -873,7 +873,7 @@ class FullyConnectedLayer(nn.Module):
                 as \text{ otherwise}
             \end{cases}\]
             for a very small $a$ e.g. $a = 0.01$.
-            \item We can train a different $a$ for each neuron, since the funciton is differentiable w.r.t. $a$. Forcing the same $a$ on all neurons is not ideal as it would limit their flexibility to respont to diffeerent features of the input.
+            \item We can train a different $a$ for each neuron, since the function is differentiable w.r.t. $a$. Forcing the same $a$ on all neurons is not ideal as it would limit their flexibility to respont to diffeerent features of the input.
             An activation function using the leaky ReLU is called a \tbf{parameteric ReLU} (PReLU). 
             \item Fully-differentiable variants of ReLU are available, such as the \tbf{softplus}:
             \[\operatorname{softplus}(s) = \operatorname{log}(1+\operatorname{exp}(s))\]
@@ -922,12 +922,18 @@ class FullyConnectedLayer(nn.Module):
         \end{itemize}
         \subsection{Forward-Mode Automatic Differentiation}
         \begin{itemize}
-            \item \tbf{Forward Automatic Differentiation} is a concept wherein we build up the gradient for the loss function at the very las layer starting from the first layer.
-            \item Consider an example:
-            \[\mbf{h} = f_1(\mbf{x}), \mbf{y} = f_2(){\mbf{h}})\]
-            Their gradients are:
-            \[\partial_\mbf{x}\mbf{y} = \partial_\mbf{h}\mbf{y} \cdot \partial _\mbf{x} \mbf{h}\]
-            We start by computing the first layer and its gradient, so $f_1$ and $\partial_\mbf{x} \mbf{h}$ will be computed. We then compute the gradient for $f_2$ and multiply it with the gradient of the previous layer.
-            Continuing this cycle for subsequent layers will result in the gradient for the total loss function. 
+            \item \tbf{Forward Automatic Differentiation} is a process that when reaching its end, stores how much each layers ouputs contributes to the entire neural network's output.
+            \item It does this by a series of steps:
+            \begin{itemize}
+                \item For a new layer $i$, we calculate $\frac{\partial \mbf{h}_i}{\partial \mbf{h}_{i-1}}$. If we are on the first layer (i.e. no layers before current layer), we initialize to $\frac{\partial \mbf{h}_1}{\partial \mbf{w}_1}$.
+                \item For all layers before the current layer, we multiply $\frac{\partial \mbf{h_i}}{\partial \mbf{h}_{i-1}}$ to their gradients w.r.t to their weights.
+                \item For our current layer, we then initialize $\frac{\partial \mbf{h}_i}{\partial \mbf{w}_i}$.
+                \item Move onto next layer.
+            \end{itemize}
+            A more formal mathematical explanation is as follows:
+            \begin{itemize}
+                \item 
+            \end{itemize}
+
         \end{itemize}
 \end{document}
