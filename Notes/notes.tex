@@ -19,6 +19,8 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{mathtools}
+\usepackage{bm}
+\usepackage{float}
 
 
 \title{\vspace{-3cm}Alice in Wonderland ML Notes}
@@ -932,8 +934,49 @@ class FullyConnectedLayer(nn.Module):
             \end{itemize}
             A more formal mathematical explanation is as follows:
             \begin{itemize}
-                \item 
-            \end{itemize}
+                \item Consider the first instruction, $\mbf{h}_1 = f_1(\mbf{x}, \mbf{w}_1)$, in our program. Because nothing has been stored, we initialize the tangent matrix for $w_1$ as its weight Jacobian:
+                \[\widehat{\mbf{W}}_1 = \partial _{\mbf{w}_1} \mbf{h}_1\]
+                \item Move onto next instruction: $\mbf{h}_2 = f_2(\mbf{h}_1, \mbf{w}_2)$. We update the previous tangent matrix whiel simulataneously initializing the second one:
+\[\overbrace{\widehat{\mathbf{W}}_1}^{\shortstack{updated $\mbf{w}_1$ \\ tangent \\ matrix}}
+\leftarrow
+\overbrace{\left[ \partial_{\mathbf{h}_1} \mathbf{h}_2 \right]}^{\shortstack{$f_2$ input \\ Jacobian}}
+\widehat{\mathbf{W}}_1\]
+\[\widehat{\mbf{W}}_2 = \frac{\partial \mbf{h}_2}{\mbf{w}_2}\]
+                \item Considering a more general case of the $i$-th layer given by $\mbf{h}_i = f_i(\mbf{h}_{i-1}, \mbf{w}_i)$, we can initialize the tangent matrix for $\mbf{w}_i$ while updating all previous matrices:
+\[\widehat{\mbf{W}}_j
+\leftarrow
+\overbrace{\left[ \partial_{\mathbf{h}_{i-1}} \mathbf{h}_i \right]}^{\shortstack{$f_i$ input \\ Jacobian}}
+\widehat{\mathbf{W}}_j \hspace{2mm} \forall j < i\]
+\[\widehat{\mbf{W}}_2 = \frac{\partial \mbf{h}_2}{\mbf{w}_2}\]
 
-        \end{itemize}
-\end{document}
+
+\end{itemize}
+
+\begin{table}[H]
+\caption{Dimensions of key components in forward-mode automatic differentiation (FAD).}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{l c l}
+\textbf{Quantity} & \textbf{Symbol} & \textbf{Dimensions} \\
+\hline
+Input to layer $i$        & $\mathbf{h}_{i-1}$            & $d_{\text{in}} \times 1$ \\
+Weights of layer $i$      & $\mathbf{W}_i$                & $d_{\text{out}} \times d_{\text{in}}$ \\
+Bias of layer $i$         & $\mathbf{b}_i$                & $d_{\text{out}} \times 1$ \\
+Output of layer $i$       & $\mathbf{h}_i$                & $d_{\text{out}} \times 1$ \\
+Final network output      & $\mathbf{h}_n$                & $d_{\text{out}}^{\text{final}} \times 1$ \\
+\hline
+Weight tangent (FAD)      & $\widehat{\mathbf{W}}_i$      & $d_{\text{out}}^{\text{final}} \times (d_{\text{out}} \cdot d_{\text{in}})$ \\
+Bias tangent (FAD)        & $\widehat{\mathbf{b}}_i$      & $d_{\text{out}}^{\text{final}} \times d_{\text{out}}$ \\
+Row vector of ones        & $\mathbf{1}^\top$             & $1 \times d_{\text{out}}^{\text{final}}$ \\
+Final gradient (weights)  & $\nabla_{\mathbf{W}_i} y$     & $1 \times (d_{\text{out}} \cdot d_{\text{in}})$ \\
+Final gradient (biases)   & $\nabla_{\mathbf{b}_i} y$     & $1 \times d_{\text{out}}$ \\
+\end{tabular}
+\end{table}
+\item The space complexity of this algorithm will roughly be proportional to the space complexity of the program we are differentiating.
+\item However, the time complexity of the algorithm will be $\mathcal{O}(n^2d^2p_j)$ where $n$ is the mini-batch dimension, d represents the input/output features, and $p_j$ is the size of $\mbf{w}_j$.
+\end{itemize}
+\subsection{Reverse-Mode Automatic Differentiation}
+\begin{itemize}
+    \item 
+\end{itemize}
+\end{document} 
