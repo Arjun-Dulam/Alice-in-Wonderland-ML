@@ -1012,6 +1012,24 @@ Final gradient (biases)   & $\nabla_{\mathbf{b}_i} y$     & $1 \times d_{\text{o
         \end{align*}
         The previous steps describe a program which is roughly symmetrical to the original program, which we call the \tbf{dual} or \tbf{reverse} program.
         The terms $\overset{\sim}{\mbf{h}}$ are called the \tbf{adjoints} and they store sequentially all the gradients of the output with respect to the variables $mbf{h}_1, mbf{h}_2, \hdots mbf{h}_l$.
+        \begin{table}[H]
+\caption{Dimensions of key components in backward-mode automatic differentiation (Backpropagation).}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{l c l}
+\textbf{Quantity} & \textbf{Symbol} & \textbf{Dimensions} \\
+\hline
+Activation at layer $i$        & $\mathbf{h}_i$                         & $d_{\text{out}} \times 1$ \\
+Weights of layer $i$           & $\mathbf{W}_i$                         & $d_{\text{out}} \times d_{\text{in}}$ \\
+Bias of layer $i$              & $\mathbf{b}_i$                         & $d_{\text{out}} \times 1$ \\
+Upstream gradient              & $\tilde{\mathbf{h}}_i = \frac{\partial y}{\partial \mathbf{h}_i}$ & $1 \times d_{\text{out}}$ \\
+Local Jacobian (w.r.t. weights)& $\frac{\partial \mathbf{h}_i}{\partial \mathbf{W}_i}$ & $d_{\text{out}} \times (d_{\text{out}} \cdot d_{\text{in}})$ \\
+Local Jacobian (w.r.t. input)  & $\frac{\partial \mathbf{h}_i}{\partial \mathbf{h}_{i-1}}$ & $d_{\text{out}} \times d_{\text{in}}$ \\
+Gradient w.r.t. weights        & $\nabla_{\mathbf{W}_i} y$              & $1 \times (d_{\text{out}} \cdot d_{\text{in}})$ \\
+Gradient w.r.t. biases         & $\nabla_{\mathbf{b}_i} y$              & $1 \times d_{\text{out}}$ \\
+Backpropagated value           & $\tilde{\mathbf{h}}_{i-1} = \frac{\partial y}{\partial \mathbf{h}_{i-1}}$ & $1 \times d_{\text{in}}$ \\
+\end{tabular}
+\end{table}
         \item In the terminology of neural networks, we sometimes say the original (\tbf{primal}) program is a \tbf{forward} poss (not forward mode auto-diff) and the reverse program is a \tbf{backward pass}.
         \item Differently from FAD, RAD must store the intermediate outputs to "unroll" the computational graph. 
         \item Computationally, RAD is much more efficient than FAD because matrix-vector multiplication has lower time complexity than matrix-matrix multiplication. However, RAD does need much more memory to store all the intermediate ouputs. 
@@ -1022,5 +1040,11 @@ Final gradient (biases)   & $\nabla_{\mathbf{b}_i} y$     & $1 \times d_{\text{o
             \label{fig:example}
         \end{figure}
     \end{itemize}
+    \subsection{Practial Considerations}
+    \subsubsection{Vector-Jacobian Products}
+    \begin{itemize}
+        \item Looking at step 
+    \end{itemize}
+        
 \end{itemize}
 \end{document} 
