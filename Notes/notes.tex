@@ -22,7 +22,6 @@
 \usepackage{bm}
 \usepackage{float}
 
-
 \title{\vspace{-3cm}Alice in Wonderland ML Notes}
 \author{}
 \date{}
@@ -977,6 +976,51 @@ Final gradient (biases)   & $\nabla_{\mathbf{b}_i} y$     & $1 \times d_{\text{o
 \end{itemize}
 \subsection{Reverse-Mode Automatic Differentiation}
 \begin{itemize}
-    \item 
+    \item Let's unroll the computation of a single gradient term corresponding to the $i$-th weight matrix:
+        \[\nabla _{\mbf{w}_i}y = \mbf{1}^\top \left[ \partial_{\mbf{h}_{i-1}} \mbf{h}_l \right] \hdots \left[ \partial_{\mbf{h}_i} \mbf{h}_{i+1}\right] \left[ \partial_{\mbf{w}_i}\mbf{h}_i \right] \]
+    \item What it's saying is the gradient of the output w.r.t to any set of weights $\mbf{w}_i$ is $\mbf{1} ^ \top$ times the product of the derivative of the ouput $\mbf{h}_i$ w.r.t to the weights $\mbf{w}_i$ and derivative of all subsequent outputs w.r.t to their previous output. 
+    \item We can combine the above formula to this:
+    \[\overset{\sim}{\mbf{h}}_i = \mbf{1}^\top \prod ^l _{j = i+1} \partial_{h_{j-1}} \mbf{h}_j\]
+    \item Because matrix multiplication associative, we can peform the multiplications in any order. We can note the following:
+    \begin{itemize}
+        \item Vector-matrix multiplication is computaitonally better than matrix-matrix multiplication. Its output is also another vector.
+        \item The product of all input Jacobians from layer $i$ to layer $l$ can be computed recursively starting from the \emph{last} term and iteratively multiplying by the input Jacobians in the reverse order.
+    \end{itemize}
+    \item This is the means by which \tbf{reverse-mode automatic differentiation} works:
+    \begin{itemize}
+        \item Differently from FAD, we execute the \emph{entire} program to be differentiated, storing all immediate outputs.
+        \item We initialize a vector $\overset{\sim}{\mbf{h}}_i = \mbf{1}^ \top$, which corresponds to the leftmost term in the previous equation
+        \item Moving in reverse order, for an index $i \in [1,l]$, we first compute the gradient with respect to the $i$-th weight matrix as:
+        \[\partial_{\mbf{w}_i}y = \overset{\sim}{\mbf{h}} \left[ \partial_{\mbf{w}_i} \mbf{h}_i \right]\]
+        This is the value which will be stored for each layer. 
+        \item Then we update our back-propagated input Jacobian as:
+        \[\overset{\sim}{\mbf{h}} \leftarrow \overset{\sim}{\mbf{h}} \left[ \partial_{h_{i-1}} h_i \right]\]
+    \end{itemize}
+    \item In more plain english:
+    \begin{itemize}
+        \item At each layer $i$, we recieve the upstream gradient:
+        \[ \frac{\partial y}{\partial h_{i}} \]
+        \item We compute the local Jacobian: 
+        \[ \frac{\partial h_{i}}{\partial w_{i}} \]
+        \item We store the product of the previous two values in our current layer: 
+        \[\frac{\partial y}{\partial w_i} = \frac{\partial y}{\partial h_i} \cdot \frac{\partial h_i}{\partial w_i}\]
+        \item We then update the value we pass on to the previous layer:
+        \begin{align*}
+            \overset{\sim}{\mbf{h}}_i &\leftarrow \overset{\sim}{\mbf{h}}_i \left[ \frac{\partial \mbf{h}_i}{\partial \mbf{h}_{i-1}} \right] \\
+            \overset{\sim}{\mbf{h}}_i &\leftarrow \frac{\partial y}{\partial \mbf{h}_i} \cdot \frac{\partial \mbf{h}}{\partial \mbf{h}_{i-1}} \\
+            \overset{\sim}{\mbf{h}}_i &\leftarrow \frac{\partial y}{\partial \mbf{h}_{i-1}} 
+        \end{align*}
+        The previous steps describe a program which is roughly symmetrical to the original program, which we call the \tbf{dual} or \tbf{reverse} program.
+        The terms $\overset{\sim}{\mbf{h}}$ are called the \tbf{adjoints} and they store sequentially all the gradients of the output with respect to the variables $mbf{h}_1, mbf{h}_2, \hdots mbf{h}_l$.
+        \item In the terminology of neural networks, we sometimes say the original (\tbf{primal}) program is a \tbf{forward} poss (not forward mode auto-diff) and the reverse program is a \tbf{backward pass}.
+        \item Differently from FAD, RAD must store the intermediate outputs to "unroll" the computational graph. 
+        \item Computationally, RAD is much more efficient than FAD because matrix-vector multiplication has lower time complexity than matrix-matrix multiplication. However, RAD does need much more memory to store all the intermediate ouputs. 
+        \item Specific techniques such as \tbf{gradient checkpointing} can be used to improve on this tradeoff by increasing number of computations in exchange for reduced memory demand. It does this by storing only some intermediate outputs at certain checkpoints, and reclaculating the outputs in the backward pass. 
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=5.5in]{../miscImages/gradientCheckpoint.png} 
+            \label{fig:example}
+        \end{figure}
+    \end{itemize}
 \end{itemize}
 \end{document} 
