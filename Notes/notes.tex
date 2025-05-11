@@ -1115,6 +1115,7 @@ Backpropagated value           & $\tilde{\mathbf{h}}_{i-1} = \frac{\partial y}{\
             {1}  &s > 0 \\
             [0,1] &s = 0
         \end{cases}\]
-        \item Any value in [0,1] is a valid subgradient in 0, with most implementations favoring $\operatorname{ReLU}'(0) = 0$.
+        \item Any value in [0,1] is a valid subgradient in 0, with most implementations favoring $\operatorname{ReLU}'(0) = 0$. 
+        Selecting subgradients at every step of an iterative descent procedure is called subgradient descent.
     \end{itemize}
 \end{document} 
