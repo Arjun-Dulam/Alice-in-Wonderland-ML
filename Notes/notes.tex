@@ -1066,5 +1066,41 @@ Backpropagated value           & $\tilde{\mathbf{h}}_{i-1} = \frac{\partial y}{\
     \vdots \\
     \text{vjp}_{f,x}(\mathbf{e}_n)
     \end{bmatrix}\]
+    \item To put into other words, we don't care about how \emph{each input} affects \emph{each output}. We only care about how the \emph{total output} affects the loss and 
+    how the \emph{total input} affects the total output.
+    \item Let's look at the VJPs of a fully-connected layer, which is composed of linear projections and elementwise non-linearities. Consider a linear projection with no bias:
+    \[f(\mbf{x}, \mbf{W}) = \mbf{Wx}\]
+    \item The input Jacobian is simply $\mbf{W}$, but the weight Jacobian is a rank-3 tensor. By comparison, the input VJP has no special structure:
+    \[\operatorname{vjp}_{f,\mbf{x}}\mbf{(v)}= \mbf{v}^\top \mbf{W}^\top = \left[ \mbf{Wv} \right] ^\top\]
+    \item The weight VJP, instead, turns out to be a simple outer product, which avoids rank-3 tensors completely:
+    \[\operatorname{vjp}_{f,\mbf{w}}\mbf{(v)}=\mbf{vx}^\top\]
 \end{itemize}
+    \subsubsection{Implemeneting a R-AD System}
+    \begin{itemize}
+        \item Take a function $f : \mathbb{R}^c \rightarrow \mathbb{R}^{c'}$. Then, $\frac{\partial f}{\partial \mbf{x}} \in \mathbb{R}^{c' \times c}$. A VJP of vector $\mbf{v} \in \mathbb{R}^{c'}$ returns:
+        \[\mbf{v} ^ \top \cdot \frac{\partial f}{\partial \mbf{x}} \in \mathbb{R}^c\]
+    \end{itemize}
+    \subsubsection{Choosing an Activation Function}\
+    \begin{itemize}
+        \item When training deep neural networks, you compute gradients by applying the chain rule layer by layer:
+        \[\frac{\partial L}{\partial \mbf{x}} = \frac{\partial L}{\partial \mbf{h}_L} \cdot \frac{\partial \mbf{h}_L}{\partial \mbf{h}_{L-1}} \hdots \frac{\partial \mbf{h}_1}{\partial \mbf{x}}\]
+        If each layer has an activation function $\phi$, then in each layer you multiply by its derivative $\phi '$.
+        \item With models with many layers, this can give rise to two pathalogical behaviors:
+        \begin{itemize}
+            \item If $\phi '(.) < 1$ everywhere, there is a risk of the gradient being shrank to 0 exponentially fast through the layers. This is the \tbf{vanishing gradient} problem.
+            \item However if $\phi(.) < 1$ everwhere, there is a risk of the gradient converging to infinity be represented properly. This is the \tbf{exploding gradient} problem. 
+        \end{itemize}
+        \item We need a function which is linear enough to avoid gradient issues but non-linear enough to separate the linear layers. The ReLU ends up being a good candidate since:
+        \[\partial_s \operatorname{ReLU}(s)
+        \begin{cases}
+            0 \hspace{.25cm} s < 0 \\
+            1 \hspace{.25cm} s > 0 
+        \end{cases}\]
+        The gradient is either zeroed-out, inducing sparsity in the computation or multiplied by 1, avoiding scaling issues. 
+    \end{itemize}
+    \subsubsection{Subdifferentiability and Correctness of AD}
+    \begin{itemize}
+        \item The ReLU is non-differentiable in 0, making the whole network not smooth. What happens now?
+        \item In practical applications, the probability of ending up at exactly $s= 0$ is null, while the gradient is defined in $\operatorname{ReLU}(\epsilon)$ for any $|\epsilon| > 0$. 
+    \end{itemize}
 \end{document} 
