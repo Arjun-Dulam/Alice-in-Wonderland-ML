@@ -1040,11 +1040,31 @@ Backpropagated value           & $\tilde{\mathbf{h}}_{i-1} = \frac{\partial y}{\
             \label{fig:example}
         \end{figure}
     \end{itemize}
+\end{itemize}
     \subsection{Practial Considerations}
     \subsubsection{Vector-Jacobian Products}
     \begin{itemize}
-        \item Looking at step 
-    \end{itemize}
-        
+        \item Looking at step (4) in the RAD algorithm, we can note that the only operaiton we need is a product between row vector $v$ and Jacobian of $f$. We can restore dimensional consistency by addding a transpose to the vector:
+        \item Gven a function $\mbf{y} = f(\mbf{x})$ with $\mbf{x} \sim (c)$ and $\mbf{y} \sim (c')$, the \tbf{Vector-Jacobian product} is another function defined as:
+        \[\operatorname{vjp}_f(\mbf{v}) = \mbf{v}^\top \partial f(\mbf{x})\]
+        where $\mbf{v} \sim (c')$. If $f$ has multiple parameters $f(\mbf{x}_1, \hdots, \mbf{x}_n)$, we can define $n$ individual VJPs as $\operatorname{vjp}_{f, \mbf{x}_1}(\mbf{v}), \hdots, \operatorname{vjp}_{f, \mbf{x}_n}(\mbf{v})$.
+    \item In our case, we can define two types of VJPs, corresponding to the input and weight argument respectively:
+    \begin{align*}
+        \operatorname{vjp}_{f,\mbf{x}}(\mbf{v}) = \mbf{v}^\top \partial_\mbf{x} f(\mbf{x}, \mbf{w}) \\
+        \operatorname{vjp}_{f,\mbf{w}}(\mbf{v}) = \mbf{v}^\top \partial_\mbf{w} f(\mbf{x}, \mbf{w}) 
+    \end{align*}
+    \item Now we can rewrite the two operations in step (4) of the RAD algorithm as two VJP calls of the primitive function with the adjoint values, corresponding to the adjoint times the weight VJP, and the adjoint times the input VJP:
+    \begin{align*}
+        \partial_\mbf{w}y &= \operatorname{vjp}_{f,\mbf{w}}(\overset{\sim}{\mbf{h}}) \\
+        \overset{\sim}{\mbf{h}} &\leftarrow \operatorname{vjp}_{f,\mbf{h}}(\overset{\sim}{\mbf{h}})
+    \end{align*}
+    \item To recover the Jacobians' computation, we can repeatedly call the VJPs with the basis vectors $\mbf{e}_1, \hdots, \mbf{e}_n$, to generate them one row at a time e.g., for the input Jacobian we have:
+    \[\partial_\mbf{x}f(\mbf{x}, \mbf{w}) = 
+    \begin{bmatrix}
+    \text{vjp}_{f,x}(\mathbf{e}_1) \\
+    \text{vjp}_{f,x}(\mathbf{e}_2) \\
+    \vdots \\
+    \text{vjp}_{f,x}(\mathbf{e}_n)
+    \end{bmatrix}\]
 \end{itemize}
 \end{document} 
