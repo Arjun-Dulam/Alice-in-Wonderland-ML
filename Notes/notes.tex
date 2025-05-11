@@ -1102,5 +1102,19 @@ Backpropagated value           & $\tilde{\mathbf{h}}_{i-1} = \frac{\partial y}{\
     \begin{itemize}
         \item The ReLU is non-differentiable in 0, making the whole network not smooth. What happens now?
         \item In practical applications, the probability of ending up at exactly $s= 0$ is null, while the gradient is defined in $\operatorname{ReLU}(\epsilon)$ for any $|\epsilon| > 0$. 
+        \item But mathematically, we can make use of subgradients. Given a convex function $f(x)$, a subgradient in $x$ is a point $z$ such that, for all $y$:
+        \[f(y) \geq f(x) + z(y-x)\]
+        \item A subgradient is the slope of a line tangent to $f(x)$ such that the entire $f$ is lower bounded by it. 
+        If $f$ is differentiable in $x$, then only one such line exists, which is the derivative of $f$ in $x$. 
+        In a non-smooth point, multiple subgradients exist and they form a set called the subdifferential of $f$ in $x$:
+        \[\partial_x f(x) = \{ z | z \text{ is a subgradient of $f(x)$} \} \]
+        \item With this definition in hand, we can complete our analysis of the gradient of the ReLU function:
+        \[\partial _s \operatorname{ReLU}(s) = 
+        \begin{cases}
+            {0}  &s < 0 \\
+            {1}  &s > 0 \\
+            [0,1] &s = 0
+        \end{cases}\]
+        \item Any value in [0,1] is a valid subgradient in 0, with most implementations favoring $\operatorname{ReLU}'(0) = 0$.
     \end{itemize}
 \end{document} 
